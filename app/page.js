@@ -1,101 +1,85 @@
-import Image from "next/image";
+"use client"
+import phoneNumbers from '@/config/config';
+import { GetGoogle } from '@/http/adminAPI';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+ 
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+
+  return (
+    <main className="">
+      <section className='relative'>
+        <div className=''>
+          <div className='sd:max-h-[60vh] xz:max-w-full overflow-y-hidden -z-10'>
             <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+              src='/fon/fon.webp'
+              alt='запчасти для смартфонов оптом'
+              width={2560}
+              height={1383}
+              className='bg-cover'
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            <div className='sd:block xz:hidden absolute inset-0 bg-black bg-opacity-50 z-0' />
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+        <div className='container mx-auto'>
+          <div className='sd:absolute xz:static top-1/2 sd:mt-0 xz:mt-28 -translate-y-1/2 sd:text-white xz:text-black'>
+            <h1 className='sd:text-3xl xz:text-xl font-semibold'>
+              ПроПартс — оптовый магазин
+            </h1>
+
+            <div className='mt-8 flex sd:flex-row xz:flex-col items-center sd:space-x-3 xz:space-x-0 sd:space-y-0 xz:space-y-3'>
+
+              <a href={`tel:${phoneNumbers.mainPhoneLink}`} className="btn sd:bg-white xz:bg-black sd:text-black xz:text-white border-none rounded-sm font-light sd:w-auto xz:w-full">
+                <Image src='/svg/phone-black.svg' alt='Телефон для заказа оптом запчастей' width={20} height={20} className='sd:block xz:hidden' />
+                <Image src='/svg/phone-white.svg' alt='Телефон для заказа оптом запчастей' width={20} height={20} className='sd:hidden xz:block' />
+                {phoneNumbers.mainPhone}
+              </a>
+              <Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/`} className='flex btn bg-gradient-to-r from-sky-500 to-indigo-500 border-none rounded-sm text-white sd:w-auto xz:w-full'>
+                Стать партнером
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <section className='sd:py-16 xz:py-0 xz:-mt-12 sd:mt-5'>
+        <div className='container mx-auto'>
+          <div className='py-16'>
+            <div className='flex sd:flex-row xz:flex-col sd:space-x-8 xz:space-x-0 sd:space-y-0 xz:space-y-8'>
+
+
+              <div className=''>
+                <p className='uppercase text-gray-400 text-xs'>
+                  оптовый магазин
+                </p>
+                <h2 className='sd:text-5xl xz:text-3xl font-semibold mt-3 uppercase'>
+                  proparts.by
+                </h2>
+
+                <p className='mt-7 text-gray-500 text-sm sd:max-w-2xl xz:max-w-full'>
+                  Добро пожаловать в Proparts.by – ваш надежный оптовый поставщик запасных частей для мобильных телефонов. Мы предлагаем широкий ассортимент качественных комплектующих по выгодным ценам. Надежность и оперативность – наши главные приоритеты!
+                </p>
+
+                <Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/login`} className='btn btn-primary rounded-sm text-white mt-7'>
+                  Личный кабинет
+                </Link>
+              </div>
+
+              <div className='sd:w-1/2 xz:w-full'>
+                <Image src='/fon/fon2.webp' alt='Фоновое изображение' width={1733} height={1080} className='rounded-sm' />
+              </div>
+            </div>
+
+
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }

@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = "mysql://root:Qaz123-321@localhost:3306/grodno"
+  relationMode = "prisma"
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  isAdmin   Boolean
+  createdAt DateTime  @default(now())
+  userData  UserData? // Обратная связь с UserData
+}
+
+model UserData {
+  id        Int      @id @default(autoincrement())
+  fullName  String // ФИО
+  phone     String // Телефон
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id]) // Связь с User
+}
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  title     String    @unique
+  groups    Group[]   // Связь с группами
+  products  Product[] // Связь с товарами
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Group {
+  id         Int       @id @default(autoincrement())
+  title      String
+  categoryId Int        // Связь с категорией
+  category   Category   @relation(fields: [categoryId], references: [id])
+  products   Product[]  // Связь с товарами
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+model Product {
+  id           Int       @id @default(autoincrement())
+  title        String
+  status       String    // "В наличии" или "Под заказ"
+  count        Int
+  price        Int       // Цена в копейках
+  article      String    @unique
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  groupId      Int       // Связь с группой товаров
+  categoryId   Int       // Связь с категорией товаров
+  group        Group     @relation(fields: [groupId], references: [id])
+  category     Category  @relation(fields: [categoryId], references: [id])
+  images       Json?     // Массив JSON объектов для изображений
+}
+
+model PriceHash {
+  id        Int      @id @default(autoincrement())
+  hash      String   @unique
+  createdAt DateTime @default(now())
+}
+

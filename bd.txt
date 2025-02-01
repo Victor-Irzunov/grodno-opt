@@ -1,0 +1,16 @@
+Применяет миграцию к локальной базе данных(Создаёт файл миграции в папке)
+npx prisma migrate dev --name add_group_to_category_relation
+
+
+Если вы работаете с продакшеном (Не генерирует Prisma Client)
+npx prisma migrate deploy 
+
+
+Генерация Prisma Client (если необходимо)
+npx prisma generate
+
+
+npx prisma studio
+
+
+npx prisma migrate reset !!!!!!!!удаляет ВСЕ данные из базы

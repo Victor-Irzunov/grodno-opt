@@ -1,0 +1,151 @@
+function transferAndCleanData() {
+  // ID исходной таблицы
+  var sourceSpreadsheetId = '1c89bUzpcEe49-0QQxxMecGjkmFdgExGDqyu2gd7uK0k';
+  // ID целевой таблицы
+  var targetSpreadsheetId = '19ZW3bldMwigzf-D1xTDM_PavpVieils_taYE1CpTpF4';
+
+  // Открываем исходную таблицу и лист
+  var sourceSpreadsheet = SpreadsheetApp.openById(sourceSpreadsheetId);
+  var sourceSheet = sourceSpreadsheet.getSheetByName('TDSheet');
+
+  // Получаем данные из исходного листа, начиная с 9-й строки (индекс 8)
+  var data = sourceSheet.getRange(9, 1, sourceSheet.getLastRow() - 8, sourceSheet.getLastColumn()).getValues();
+
+  // Индексы столбцов для удаления (нумерация с 0)
+  var columnsToDelete = [0, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 56, 57, 58, 59, 60, 61, 62, 63, 64, 66, 67, 68, 69, 70, 71, 72, 73];
+
+  // Удаляем указанные столбцы из данных
+  data = data.map(function(row) {
+    return row.filter(function(cell, index) {
+      return columnsToDelete.indexOf(index) === -1;
+    });
+  });
+
+  // Проверяем и обрабатываем строки данных
+  var headerRow = data[0]; // Первая строка — заголовок
+  var cleanedData = [];
+  var headerAdded = false;
+
+  data.forEach(function(row) {
+    // Проверяем, пуста ли строка
+    var isEmptyRow = row.every(function(cell) {
+      return cell === "" || cell === null || cell === undefined;
+    });
+
+    if (isEmptyRow) {
+      // Пропускаем пустые строки
+      return;
+    }
+
+    // Если строка совпадает с оригинальным заголовком
+    if (JSON.stringify(row) === JSON.stringify(headerRow)) {
+      if (!headerAdded) {
+        // Добавляем заголовок только один раз
+        cleanedData.push(row);
+        headerAdded = true;
+      }
+    } else {
+      cleanedData.push(row);
+    }
+  });
+
+  // Редактируем заголовок в обработанных данных (после удаления дубликатов)
+  cleanedData[0] = cleanedData[0].map(function(cell) {
+    if (cell === "Товары (работы, услуги)") {
+      return "Товары"; // Заменяем текст
+    }
+    return cell; // Остальные значения не изменяем
+  });
+
+  // Открываем целевую таблицу и лист
+  var targetSpreadsheet = SpreadsheetApp.openById(targetSpreadsheetId);
+  var targetSheet = targetSpreadsheet.getSheetByName('Лист1');
+
+  // Очищаем целевой лист
+  targetSheet.clearContents();
+
+  // Вставляем очищенные данные в целевой лист
+  targetSheet.getRange(1, 1, cleanedData.length, cleanedData[0].length).setValues(cleanedData);
+
+  // Очищаем форматирование в целевом листе
+  targetSheet.clearFormats();
+}
+
+----------------------
+
+Удаление Итого
+function transferAndCleanData() {
+  // ID исходной таблицы
+  var sourceSpreadsheetId = '1c89bUzpcEe49-0QQxxMecGjkmFdgExGDqyu2gd7uK0k';
+  // ID целевой таблицы
+  var targetSpreadsheetId = '19ZW3bldMwigzf-D1xTDM_PavpVieils_taYE1CpTpF4';
+
+  // Открываем исходную таблицу и лист
+  var sourceSpreadsheet = SpreadsheetApp.openById(sourceSpreadsheetId);
+  var sourceSheet = sourceSpreadsheet.getSheetByName('TDSheet');
+
+  // Получаем данные из исходного листа, начиная с 9-й строки (индекс 8)
+  var data = sourceSheet.getRange(9, 1, sourceSheet.getLastRow() - 8, sourceSheet.getLastColumn()).getValues();
+
+  // Индексы столбцов для удаления (нумерация с 0)
+  var columnsToDelete = [0, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 56, 57, 58, 59, 60, 61, 62, 63, 64, 66, 67, 68, 69, 70, 71, 72, 73];
+
+  // Удаляем указанные столбцы из данных
+  data = data.map(function(row) {
+    return row.filter(function(cell, index) {
+      return columnsToDelete.indexOf(index) === -1;
+    });
+  });
+
+  // Проверяем и обрабатываем строки данных
+  var headerRow = data[0]; // Первая строка — заголовок
+  var cleanedData = [];
+  var headerAdded = false;
+
+  data.forEach(function(row) {
+    // Проверяем, пуста ли строка
+    var isEmptyRow = row.every(function(cell) {
+      return cell === "" || cell === null || cell === undefined;
+    });
+
+    if (isEmptyRow) {
+      // Пропускаем пустые строки
+      return;
+    }
+
+    // Если строка совпадает с оригинальным заголовком
+    if (JSON.stringify(row) === JSON.stringify(headerRow)) {
+      if (!headerAdded) {
+        // Добавляем заголовок только один раз
+        cleanedData.push(row);
+        headerAdded = true;
+      }
+    } else {
+      // Проверяем, содержит ли строка "Итого" в последней ячейке
+      if (row[row.length - 1] !== 'Итого:') {
+        cleanedData.push(row);
+      }
+    }
+  });
+
+  // Редактируем заголовок в обработанных данных (после удаления дубликатов)
+  cleanedData[0] = cleanedData[0].map(function(cell) {
+    if (cell === "Товары (работы, услуги)") {
+      return "Товары"; // Заменяем текст
+    }
+    return cell; // Остальные значения не изменяем
+  });
+
+  // Открываем целевую таблицу и лист
+  var targetSpreadsheet = SpreadsheetApp.openById(targetSpreadsheetId);
+  var targetSheet = targetSpreadsheet.getSheetByName('Лист1');
+
+  // Очищаем целевой лист
+  targetSheet.clearContents();
+
+  // Вставляем очищенные данные в целевой лист
+  targetSheet.getRange(1, 1, cleanedData.length, cleanedData[0].length).setValues(cleanedData);
+
+  // Очищаем форматирование в целевом листе
+  targetSheet.clearFormats();
+}

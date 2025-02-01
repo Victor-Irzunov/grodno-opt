@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /thank-you
+Disallow: /politika
+Disallow: /super-admin
