@@ -6,7 +6,6 @@ import crypto from 'crypto';
 const prisma = new PrismaClient();
 
 async function updateGoogleSheet(missingProducts) {
-  console.log("🚀 🚀 🚀  _ updateGoogleSheet _ missingProducts:", missingProducts)
   try {
     const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
     credentials.private_key = credentials.private_key.replace(/\\n/gm, '\n');
@@ -87,154 +86,10 @@ async function updateGoogleSheet(missingProducts) {
   }
 }
 
-
-
-
-
-// export async function POST(req) {
-//   try {
-//     const body = await req.json();
-//     const rawProducts = body.data;
-
-//     if (!rawProducts || !Array.isArray(rawProducts)) {
-//       return NextResponse.json(
-//         { message: 'Продукты не предоставлены или неверный формат данных' },
-//         { status: 400 }
-//       );
-//     }
-
-//     // Генерация хеш-суммы для прайса
-//     const hash = crypto.createHash('sha256').update(JSON.stringify(rawProducts)).digest('hex');
-
-//     // Проверка наличия хеша в базе
-//     const existingHash = await prisma.priceHash.findUnique({
-//       where: { hash },
-//     });
-
-//     if (existingHash) {
-//       return NextResponse.json(
-//         { message: 'Этот прайс уже был загружен ранее', success: false },
-//         { status: 400 }
-//       );
-//     }
-
-//     // Сохранение нового хеша в базе
-//     await prisma.priceHash.create({
-//       data: { hash },
-//     });
-
-//     // Далее ваша логика обработки продуктов
-//     const [headers, ...rows] = rawProducts;
-
-//     if (!headers || headers.length < 5 || !rows.length) {
-//       return NextResponse.json(
-//         { message: 'Некорректный формат данных в прайсе' },
-//         { status: 400 }
-//       );
-//     }
-
-//     const products = rows.map((row) => ({
-//       title: row[2]?.trim() || '',
-//       article: row[1]?.trim() || '',
-//       count: parseInt(row[3], 10) || 0,
-//       price: parseFloat(row[4], 10) || 0,
-//     }));
-
-//     const categories = await prisma.category.findMany({
-//       include: { groups: true },
-//     });
-
-//     const categoryMap = new Map();
-//     categories.forEach((category) => {
-//       category.groups.forEach((group) => {
-//         categoryMap.set(`${category.title}-${group.title}`.toLowerCase(), {
-//           category,
-//           group,
-//         });
-//       });
-//     });
-
-//     const missingProducts = [];
-//     const results = [];
-//     const errors = [];
-
-//     for (const product of products) {
-//       try {
-//         const { title, article, count, price } = product;
-
-//         if (!title || !article || count <= 0 || price <= 0) {
-//           throw new Error(`Некорректные данные для продукта: ${JSON.stringify(product)}`);
-//         }
-
-//         const unitPrice = price;
-
-//         let matchedCategory = null;
-//         let matchedGroup = null;
-
-//         for (const [key, value] of categoryMap.entries()) {
-//           const [categoryTitle, groupTitle] = key.split('-');
-//           if (
-//             title.toLowerCase().includes(categoryTitle) &&
-//             title.toLowerCase().includes(groupTitle)
-//           ) {
-//             matchedCategory = value.category;
-//             matchedGroup = value.group;
-//             break;
-//           }
-//         }
-
-//         if (!matchedCategory || !matchedGroup) {
-//           missingProducts.push(product);
-//           continue;
-//         }
-
-//         const existingProduct = await prisma.product.findUnique({
-//           where: { article },
-//         });
-
-//         if (existingProduct) {
-//           const updatedProduct = await prisma.product.update({
-//             where: { article },
-//             data: {
-//               count: existingProduct.count + count,
-//               price: unitPrice,
-//             },
-//           });
-//           results.push(updatedProduct);
-//         } else {
-//           const newProduct = await prisma.product.create({
-//             data: {
-//               title,
-//               article,
-//               count,
-//               price: unitPrice,
-//               status: 'В наличии',
-//               groupId: matchedGroup.id,
-//               categoryId: matchedCategory.id,
-//             },
-//           });
-//           results.push(newProduct);
-//         }
-//       } catch (error) {
-//         errors.push({ product, error: error.message });
-//       }
-//     }
-
-//     if (missingProducts.length > 0) {
-//       await updateGoogleSheet(missingProducts);
-//     }
-
-//     return NextResponse.json({ success: results.length, missingProducts, errors }, { status: 200 });
-//   } catch (error) {
-//     console.error('Ошибка при обработке прайса:', error);
-//     return NextResponse.json({ message: 'Ошибка сервера' }, { status: 500 });
-//   }
-// }
-
 export async function POST(req) {
   try {
     const body = await req.json();
-    const rawProducts = body.data;
+    const { data: rawProducts, currency, exchangeRate } = body;
 
     if (!rawProducts || !Array.isArray(rawProducts)) {
       return NextResponse.json(
@@ -243,13 +98,15 @@ export async function POST(req) {
       );
     }
 
-    // Генерация хеш-суммы для прайса
-    const hash = crypto.createHash('sha256').update(JSON.stringify(rawProducts)).digest('hex');
+    if (!currency || !exchangeRate || isNaN(exchangeRate) || exchangeRate <= 0) {
+      return NextResponse.json(
+        { message: 'Некорректный курс обмена или валюта' },
+        { status: 400 }
+      );
+    }
 
-    // Проверка наличия хеша в базе
-    const existingHash = await prisma.priceHash.findUnique({
-      where: { hash },
-    });
+    const hash = crypto.createHash('sha256').update(JSON.stringify(rawProducts)).digest('hex');
+    const existingHash = await prisma.priceHash.findUnique({ where: { hash } });
 
     if (existingHash) {
       return NextResponse.json(
@@ -257,14 +114,9 @@ export async function POST(req) {
         { status: 400 }
       );
     }
-
-    // Сохранение нового хеша в базе
-    await prisma.priceHash.create({
-      data: { hash },
-    });
+    await prisma.priceHash.create({ data: { hash } });
 
     const [headers, ...rows] = rawProducts;
-
     if (!headers || headers.length < 5 || !rows.length) {
       return NextResponse.json(
         { message: 'Некорректный формат данных в прайсе' },
@@ -276,7 +128,7 @@ export async function POST(req) {
       title: row[2]?.trim() || '',
       article: row[1]?.trim() || '',
       count: parseInt(row[3], 10) || 0,
-      price: parseFloat(row[4], 10) || 0,
+      price: parseFloat(row[4]) || 0,
     }));
 
     const categories = await prisma.category.findMany({
@@ -298,7 +150,6 @@ export async function POST(req) {
 
     for (const product of products) {
       const { title, article, count, price } = product;
-
       let matchedCategory = null;
       let matchedGroup = null;
 
@@ -319,6 +170,23 @@ export async function POST(req) {
         continue;
       }
 
+      let priceInUSD;
+      switch (currency) {
+        case 'RUB':
+          priceInUSD = parseFloat((price * exchangeRate / 100).toFixed(3));  // Округляем до 3 знаков и преобразуем в число
+          break;
+        case 'CNY':
+          priceInUSD = parseFloat((price * exchangeRate / 10).toFixed(3));
+          break;
+        case 'BYN':
+          priceInUSD = parseFloat((price / exchangeRate).toFixed(3));
+          break;
+        default:
+          return NextResponse.json(
+            { message: 'Некорректная валюта' },
+            { status: 400 }
+          );
+      }
       const existingProduct = await prisma.product.findUnique({ where: { article } });
 
       if (existingProduct) {
@@ -326,7 +194,7 @@ export async function POST(req) {
           where: { article },
           data: {
             count: existingProduct.count + count,
-            price,
+            price: priceInUSD,
           },
         });
         results.push(updatedProduct);
@@ -336,7 +204,7 @@ export async function POST(req) {
             title,
             article,
             count,
-            price,
+            price: priceInUSD,
             status: 'В наличии',
             groupId: matchedGroup.id,
             categoryId: matchedCategory.id,
@@ -349,11 +217,14 @@ export async function POST(req) {
 
     if (missingProducts.length > 0) {
       await updateGoogleSheet(missingProducts);
-      return NextResponse.json({
-        message: 'Некоторые товары не имеют категорий или групп. Проверьте Google Таблицу.',
-        success: false,
-        missingProducts,
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          message: 'Некоторые товары не имеют категорий или групп.',
+          success: false,
+          missingProducts,
+        },
+        { status: 400 }
+      );
     }
 
     return NextResponse.json({ success: results.length }, { status: 200 });
@@ -362,3 +233,7 @@ export async function POST(req) {
     return NextResponse.json({ message: 'Ошибка сервера' }, { status: 500 });
   }
 }
+
+
+
+

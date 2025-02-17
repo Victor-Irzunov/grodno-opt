@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Form, Input, message, Upload, Radio, Checkbox, Select, Empty, Typography } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
-import { createOneProduct, getAllCategory, getAllGroupOneCategory } from '@/http/adminAPI';
+import {getAllCategory, getAllGroupOneCategory, updateOneProduct } from '@/http/adminAPI';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -31,17 +31,57 @@ const resizeFile = (file, width, height, quality = 60) =>
 	});
 
 
-const AddOneProductForm = () => {
+const UpdateOneProductForm = ({ data, setProduct }) => {
+	console.log("🚀 🚀 🚀  _ UpdateOneProductForm _ data:", data)
+
 	const [form] = Form.useForm();
 	const [imageList, setImageList] = useState([]);
+	console.log("🚀 🚀 🚀  _ UpdateOneProductForm _ imageList:", imageList)
 	const [categories, setCategories] = useState([]);
 	const [groups, setGroups] = useState([]);
 	const [selectedCategory, setSelectedCategory] = useState(null);
 	const [selectedGroup, setSelectedGroup] = useState(null);
 
+
 	useEffect(() => {
-		getAllCategory().then(data => setCategories(data));
+		getAllCategory().then((data) => setCategories(data));
+		if (data?.categoryId) {
+			handleCategoryChange(data.categoryId);
+		}
 	}, []);
+
+	useEffect(() => {
+		if (data) {
+			form.setFieldsValue({
+				...data,
+				title: data.title,
+				article: data.article,
+				count: data.count,
+				price: data.price,
+				status: data.status,
+				categoryId: data.categoryId,
+				groupId: data.groupId,
+			});
+			setSelectedCategory(data.categoryId);
+			setSelectedGroup(data.groupId);
+
+			if (data.images) {
+				try {
+					const parsedImages = typeof data.images === "string" ? JSON.parse(data.images) : data.images || [];
+					const imagesWithUID = parsedImages.map((image, index) => ({
+						...image,
+						uid: image.uid || `__AUTO__${Date.now()}_${index}__`
+					}));
+
+					setImageList(imagesWithUID);
+				} catch (error) {
+					console.error("Ошибка парсинга изображений:", error);
+				}
+			}
+		}
+	}, [data, form]);
+
+
 
 	const handleCategoryChange = async (id) => {
 		setSelectedCategory(id);
@@ -62,6 +102,20 @@ const AddOneProductForm = () => {
 		}
 	};
 
+	const handleImageUpload = async ({ fileList }) => {
+		const processedImages = await Promise.all(
+			fileList.map(async (file) => {
+				if (file.originFileObj || file instanceof File) {
+					const original = await resizeFile(file.originFileObj || file, 1280, 720, 70);
+					const thumbnail = await resizeFile(file.originFileObj || file, 300, 169, 85);
+					return { original, thumbnail, uid: file.uid };
+				}
+				return file;
+			})
+		);
+		setImageList(processedImages);
+	};
+
 	const SortableImage = ({ id, image, onRemove, isMain }) => {
 		const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
 		const style = {
@@ -74,7 +128,8 @@ const AddOneProductForm = () => {
 			onRemove(id);
 		};
 
-		const imageUrl = image.original instanceof File ? URL.createObjectURL(image.original) : null;
+		// Проверка: если image — это строка URL (blob), используем её напрямую, иначе добавляем статический путь
+		const imageUrl = image instanceof File ? URL.createObjectURL(image) : image;
 
 		return (
 			<div className="sd:mr-2 xz:mr-1 relative">
@@ -96,16 +151,6 @@ const AddOneProductForm = () => {
 		);
 	};
 
-	const handleImageUpload = async ({ fileList }) => {
-		const processedImages = await Promise.all(
-			fileList.map(async (file) => {
-				const original = await resizeFile(file.originFileObj || file, 1280, 720, 70);
-				const thumbnail = await resizeFile(file.originFileObj || file, 300, 169, 85);
-				return { original, thumbnail, uid: file.uid };
-			})
-		);
-		setImageList(processedImages);
-	};
 
 	const onFinish = async (values) => {
 		console.log("🚀 🚀 🚀  _ onFinish _ values:", values)
@@ -118,22 +163,39 @@ const AddOneProductForm = () => {
 		formData.append("categoryId", values.categoryId);
 		formData.append("groupId", selectedGroup);
 
-		imageList.forEach((file) => {
-			formData.append("originalImages", file.original);
-			formData.append("thumbnailImages", file.thumbnail);
-		});
+		formData.append('productId', data.id);
 
+		// Разделяем изображения на существующие и новые
+		const existingImages = imageList.filter(
+			(file) => typeof file.original === 'string' && typeof file.thumbnail === 'string'
+		);
+
+		const newImages = imageList.filter(
+			(file) => file.original instanceof File && file.thumbnail instanceof File
+		);
+
+		// Передаем существующие изображения в виде JSON строки
+		if (existingImages.length > 0) {
+			formData.append('existingImages', JSON.stringify(existingImages));
+		}
+
+		// Добавляем только новые изображения по одному, избегая дублирования
+		newImages.forEach((file) => {
+			formData.append('originalImages', file.original);
+			formData.append('thumbnailImages', file.thumbnail);
+		});
 		try {
-			const data = await createOneProduct(formData);
-			if (data) {
-				message.success("Товар успешно добавлен");
+			const response = await updateOneProduct(formData);
+			if (response) {
+				message.success("Товар отредактирован!");
 				form.resetFields();
 				setImageList([]);
 				setSelectedCategory(null)
 				setSelectedGroup(null)
+				setProduct({})
 			}
 		} catch (error) {
-			message.error("Ошибка при добавлении товара");
+			message.error("Ошибка при изменении товара");
 		}
 	};
 
@@ -270,7 +332,7 @@ const AddOneProductForm = () => {
 						fileList={imageList}
 						showUploadList={false}
 					>
-						<Button color="primary" variant="outlined" style={{ backgroundColor: '#191919' }} icon={<UploadOutlined />}>Загрузить изображения</Button>
+						<Button icon={<UploadOutlined />}>Загрузить изображения</Button>
 					</Upload>
 					<DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
 						<SortableContext items={imageList.map((file) => file.uid)} strategy={verticalListSortingStrategy}>
@@ -279,7 +341,11 @@ const AddOneProductForm = () => {
 									<SortableImage
 										key={file.uid}
 										id={file.uid}
-										image={file}
+										image={
+											file.original instanceof File
+												? URL.createObjectURL(file.original)
+												: `${process.env.NEXT_PUBLIC_BASE_URL}/uploads/${file.original}`
+										}
 										onRemove={handleRemoveImage}
 										isMain={index === 0}
 									/>
@@ -304,4 +370,5 @@ const AddOneProductForm = () => {
 	);
 };
 
-export default AddOneProductForm;
+
+export default UpdateOneProductForm;

@@ -4,6 +4,7 @@ import AddGroupAdmin from "@/components/CompAdmin/AddGroupAdmin";
 import AddOneProductAdmin from "@/components/CompAdmin/AddOneProductAdmin";
 import MainAdmin from "@/components/CompAdmin/MainAdmin";
 import ProductAdmin from "@/components/CompAdmin/ProductAdmin";
+import UpdateOneProductAdmin from "@/components/CompAdmin/UpdateOneProductAdmin";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -23,6 +24,8 @@ function Page() {
 				return <ProductAdmin />;
 			case "AddOneProductAdmin":
 				return <AddOneProductAdmin />;
+			case "UpdateOneProductAdmin":
+				return <UpdateOneProductAdmin />;
 			default:
 				return <MainAdmin />;
 		}
@@ -97,6 +100,17 @@ function Page() {
 										className={`pl-0.5 ${activeComponent === "AddOneProductAdmin" ? "border border-primary rounded-md text-primary bg-[#317bff1a]" : ""}`}
 									>
 										• <span>Добавить товар</span>
+									</div>
+
+									<div>
+										<Image src="/svg/vertical-line.svg" alt="Вертикальная линия меню" width={10} height={60} />
+									</div>
+
+									<div
+										onClick={() => setActiveComponent("UpdateOneProductAdmin")}
+										className={`pl-0.5 ${activeComponent === "UpdateOneProductAdmin" ? "border border-primary rounded-md text-primary bg-[#317bff1a]" : ""}`}
+									>
+										• <span>Редактировать товар</span>
 									</div>
 								</div>
 							</div>

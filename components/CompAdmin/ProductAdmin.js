@@ -4,7 +4,6 @@ import AddProductPrice from "../FormsAdmin/AddProductPrice"
 
 const ProductAdmin = () => {
 	const [data, setData] = useState([]);
-	console.log("🚀 🚀 🚀  _ ProductAdmin _ data:", data)
 
 	return (
 		<div className="pt-10 px-12 text-white pb-24">

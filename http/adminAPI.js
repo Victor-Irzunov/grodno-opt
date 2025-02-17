@@ -98,14 +98,13 @@ export const getAllProducs = async () => {
 };
 
 
-export const updateOneCar = async (product) => {
-	const { data } = await $authHost.put('api/cars/', product)
+export const updateOneProduct = async (product) => {
+	const { data } = await $authHost.put('api/admin/product/one/', product)
 	return data
 }
 
-
-export const getOneCar = async (id) => {
-	const { data } = await $host.get('api/cars/' + id)
+export const getOneProduct = async (id) => {
+	const { data } = await $host.get('api/admin/product/' + id)
 	return data
 }
 export const getRecommendedProduct = async () => {
