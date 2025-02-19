@@ -32,11 +32,9 @@ const resizeFile = (file, width, height, quality = 60) =>
 
 
 const UpdateOneProductForm = ({ data, setProduct }) => {
-	console.log("🚀 🚀 🚀  _ UpdateOneProductForm _ data:", data)
 
 	const [form] = Form.useForm();
 	const [imageList, setImageList] = useState([]);
-	console.log("🚀 🚀 🚀  _ UpdateOneProductForm _ imageList:", imageList)
 	const [categories, setCategories] = useState([]);
 	const [groups, setGroups] = useState([]);
 	const [selectedCategory, setSelectedCategory] = useState(null);

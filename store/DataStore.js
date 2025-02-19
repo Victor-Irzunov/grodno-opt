@@ -6,6 +6,7 @@ export default class DataStore {
 		this._isUpdateKorzina = false
 		this._OfficialRate = null
 		this._currency = 'USD'
+		this._catalogId = null
 
 		makeAutoObservable(this)
 	}
@@ -23,6 +24,9 @@ export default class DataStore {
 	setCurrency(data) {
 		this._currency = data
 	}
+	setCatalogId(data) {
+		this._catalogId = data
+	}
 
 	get dataKorzina() {
 		return this._dataKorzina
@@ -35,6 +39,9 @@ export default class DataStore {
 	}
 	get currency() {
 		return this._currency
+	}
+	get catalogId() {
+		return this._catalogId
 	}
 
 

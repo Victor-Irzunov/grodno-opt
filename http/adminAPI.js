@@ -29,6 +29,10 @@ export const getAllCategory = async () => {
 	const { data } = await $host.get('api/admin/category')
 	return data
 }
+export const getAllCategoryAndGroup = async () => {
+	const { data } = await $host.get('api/admin/category/all/')
+	return data
+}
 export const addGroup = async (obj) => {
 	const { data } = await $authHost.post('api/admin/group', obj)
 	return data
@@ -81,8 +85,14 @@ export const getAllGroupOneCategory = async (id) => {
 	const { data } = await $host.get('api/admin/group/' + id)
 	return data
 }
+
 export const uploadPriceProduct = async (obj) => {
 	const { data } = await $authHost.post('api/admin/product', obj)
+	return data
+}
+
+export const editDiscountGroup = async (obj) => {
+	const { data } = await $authHost.put('api/admin/group', obj)
 	return data
 }
 

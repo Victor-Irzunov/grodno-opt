@@ -28,11 +28,13 @@ export const Search = ({ searchQuery, handleSearchChange, handleCurrencyChange, 
         <label className="form-control w-full max-w-xs">
           <select
             className="select select-bordered rounded-sm"
+            value={dataApp.currency}
             onChange={(e) => handleCurrencyChange(e.target.value)}
           >
-            <option value="BYN" selected={dataApp.currency === 'BYN'}>BYN</option>
-            <option value="USD" selected={dataApp.currency === 'USD'}>USD</option>
+            <option value="BYN">BYN</option>
+            <option value="USD">USD</option>
           </select>
+
         </label>
       </div>
     </div>

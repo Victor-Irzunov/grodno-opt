@@ -42,9 +42,11 @@ model Group {
   categoryId Int        // Связь с категорией
   category   Category   @relation(fields: [categoryId], references: [id])
   products   Product[]  // Связь с товарами
+  discount   Decimal?   @db.Decimal(5, 2)  // Скидка в процентах (максимум 99.99%)
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
 }
+
 
 model Product {
   id           Int       @id @default(autoincrement())

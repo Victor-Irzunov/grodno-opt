@@ -4,15 +4,22 @@ import UserStore from '../store/UserStore';
 import DataStore from '../store/DataStore';
 import { dataUser } from '../http/userAPI';
 import { dollarExchangeRate } from '@/Api-bank/api';
+import { getAllCategoryAndGroup, getAllProducs } from '@/http/adminAPI';
 const MyContext = createContext();
 
 const MyContextProvider = ({ children }) => {
   const [state, setState] = useState({});
+  const [isState, setIsState] = useState(false);
+  // const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
   const [user] = useState(new UserStore())
   const [dataApp] = useState(new DataStore())
 
   const updateState = (newState) => {
     setState(newState);
+  };
+  const updateIsState = () => {
+    setIsState(i => !i);
   };
   
   useEffect(() => {
@@ -40,8 +47,33 @@ const MyContextProvider = ({ children }) => {
     dataApp.setCurrency(currency);
   };
 
+  useEffect(() => {
+    // if (typeof window !== "undefined") {
+    const cartData = JSON.parse(localStorage.getItem("parts")) || [];
+    dataApp.setDataKorzina(cartData)
+    // }
+  }, [state, isState]);
+
+  // useEffect(() => {
+  //   getAllCategoryAndGroup().then(data => {
+  //     if (data) {
+  //       setCategories(data)
+  //    }
+  //   })
+  // },[])
+
+  useEffect(() => {
+    getAllProducs()
+      .then(data => {
+      if (data) {
+        setProducts(data.serializedProducts)
+     }
+    })
+  },[])
+     
+
   return (
-    <MyContext.Provider value={{ state, updateState, user, dataApp, handleCurrencyChange }}>
+    <MyContext.Provider value={{ state, products, updateIsState, isState, updateState, user, dataApp, handleCurrencyChange }}>
       {children}
     </MyContext.Provider>
   );

@@ -56,7 +56,10 @@ const GalleryComponent = ({ images, title }) => {
 		<div className='mt-8'>
 			<div className="relative">
 				<div className="relative rounded-lg overflow-hidden">
-					<ImageGallery
+					{
+						images.length ?
+						
+						<ImageGallery
 						ref={galleryRef}
 						items={galleryItems}
 						showFullscreenButton={true}
@@ -65,8 +68,12 @@ const GalleryComponent = ({ images, title }) => {
 						startIndex={currentIndex}
 						onClick={() => openModal(currentIndex)}
 						onSlide={(index) => setCurrentIndex(index)}
-						renderItem={renderImage} // Используем кастомную функцию рендеринга изображения
-					/>
+						renderItem={renderImage}
+							/>
+							:
+							<Image src='/svg/image-grey.svg' className='mx-auto' alt='Изображения у данного товара нет' width={300} height={300} />
+					}
+					
 				</div>
 
 				<div className="flex overflow-x-scroll mt-4 space-x-2">

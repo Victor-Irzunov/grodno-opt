@@ -2,6 +2,7 @@
 import AddCategoryAdmin from "@/components/CompAdmin/AddCategoryAdmin";
 import AddGroupAdmin from "@/components/CompAdmin/AddGroupAdmin";
 import AddOneProductAdmin from "@/components/CompAdmin/AddOneProductAdmin";
+import EditDiscountGroupAdmin from "@/components/CompAdmin/EditDiscountGroupAdmin";
 import MainAdmin from "@/components/CompAdmin/MainAdmin";
 import ProductAdmin from "@/components/CompAdmin/ProductAdmin";
 import UpdateOneProductAdmin from "@/components/CompAdmin/UpdateOneProductAdmin";
@@ -26,6 +27,8 @@ function Page() {
 				return <AddOneProductAdmin />;
 			case "UpdateOneProductAdmin":
 				return <UpdateOneProductAdmin />;
+			case "EditDiscountGroupAdmin":
+				return <EditDiscountGroupAdmin />;
 			default:
 				return <MainAdmin />;
 		}
@@ -111,6 +114,17 @@ function Page() {
 										className={`pl-0.5 ${activeComponent === "UpdateOneProductAdmin" ? "border border-primary rounded-md text-primary bg-[#317bff1a]" : ""}`}
 									>
 										• <span>Редактировать товар</span>
+									</div>
+
+									<div>
+										<Image src="/svg/vertical-line.svg" alt="Вертикальная линия меню" width={10} height={60} />
+									</div>
+
+									<div
+										onClick={() => setActiveComponent("EditDiscountGroupAdmin")}
+										className={`pl-0.5 ${activeComponent === "EditDiscountGroupAdmin" ? "border border-primary rounded-md text-primary bg-[#317bff1a]" : ""}`}
+									>
+										• <span>Скидка группы</span>
 									</div>
 								</div>
 							</div>

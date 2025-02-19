@@ -1,42 +1,73 @@
+"use client"
+import { MyContext } from "@/contexts/MyContextProvider";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
-export const AsideMenu = ({ data, kategoriya, searchResults }) => {
-	const [loadedData, setLoadedData] = useState([]);
+export const AsideMenu = ({ data, setSelectedCategory, flex, selectedCategory, block, setIsOpen }) => {
+  const [loadedData, setLoadedData] = useState([]);
+  const { dataApp } = useContext(MyContext);
 
-	useEffect(() => {
-		if (data.length) {
-			setLoadedData(data);
-		}
-	}, [data]);
+  useEffect(() => {
+    if (data.length) {
+      setLoadedData(data);
+    }
+  }, [data]);
 
-	if (!loadedData.length) return null; // Ждём загрузки данных
+  const handleCategoryClick = (categoryId) => {
+    setSelectedCategory(categoryId);
+  };
 
-	return (
-		<aside className="sd:block xz:hidden sd:w-1/5 xz:w-full">
-			<div className='sticky top-24'>
-				<div className="flex space-x-2">
-					<Image src="/svg/catalog.svg" alt="Каталог" width={12} height={12} />
-					<span className="text-xs text-gray-500">Каталог</span>
-				</div>
-				<div className="mt-4">
-					<ul className="border text-sm text-gray-800">
-						{loadedData.map((el) => (
-							<li
-								key={el.id}
-								className={`p-2 border-b ${el.link === kategoriya && !searchResults ? "font-semibold" : ""
-									} ${searchResults ? "opacity-55 hover:opacity-100" : ""
-									} hover:bg-slate-50 hover-transition`}
-							>
-								<Link href={`/catalog/${el.id}`} className="flex space-x-1">
-									<h2 className="">{el.title}</h2>
-								</Link>
-							</li>
-						))}
-					</ul>
-				</div>
-			</div>
-		</aside>
-	);
+  const hangleCategoryId = (id) => {
+    dataApp.setCatalogId(id)
+  }
+
+  if (!loadedData.length) return null;
+
+  return (
+    <aside className={`${block ? 'w-full pt-16': 'sd:block xz:hidden'} ${flex ? 'sd:w-1/5 xz:w-full' : ''}`}>
+      <div className='sticky top-24'>
+        <div className="flex space-x-2">
+          <Image src="/svg/catalog.svg" alt="Каталог" width={12} height={12} />
+          <span className="text-xs text-gray-500">Каталог</span>
+        </div>
+        <div className="mt-4">
+          {
+            flex ?
+              <ul className="border text-sm text-gray-800">
+                {loadedData.map((el) => (
+
+                  <li
+                    key={el.id}
+                    className="p-2 border-b hover:bg-slate-50 hover-transition cursor-pointer"
+                    onClick={() => handleCategoryClick(el.id)}
+                  >
+                    <h2 className={`flex space-x-1 ${selectedCategory === el.id ? 'font-bold' : ''}`}>{el.title}</h2>
+                  </li>
+                ))}
+              </ul>
+              :
+              <ul className="border text-sm text-gray-800">
+                {loadedData.map((el) => (
+
+                  <li
+                    key={el.id}
+                    className="p-2 border-b hover:bg-slate-50 hover-transition cursor-pointer"
+                    onClick={() => {
+                      hangleCategoryId(el.id)
+                      setIsOpen(false)
+                    }}
+                  >
+                    <Link href='/catalog'>
+                      <h2 className={`flex space-x-1 ${selectedCategory === el.id ? 'font-bold' : ''}`}>{el.title}</h2>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+          }
+
+        </div>
+      </div>
+    </aside>
+  );
 };

@@ -4,17 +4,26 @@ import { NextResponse } from 'next/server';
 const prisma = new PrismaClient();
 
 
-export async function GET(req) {
-	console.log("🚀 🚀 🚀  _ GET ____________________:")
-  try {
-	 const products = await prisma.product.findMany();
-	 console.log("🚀 🚀 🚀  _ GET _ products:", products)
+export async function GET() {
+	try {
+		const data = await prisma.product.findMany({
+			include: {
+				category: true,
+				group: true,
+			}
+		}
+		);
+		const serializedProducts = data.map((product) => ({
+			...product,
+			price: product.price.toString(), // Преобразуем Decimal в строку
+		}));
+		if (!serializedProducts) {
+			return new NextResponse("Товар не найден", { status: 404 });
+		}
+		return NextResponse.json({ message: "Товар получен", serializedProducts }, { status: 200 });
 
-	  
-	 return NextResponse.json(products, { status: 200 });
-  } catch (error) {
-	 console.error('Ошибка при получении категорий:', error);
-	 return NextResponse.json({ message: 'Ошибка сервера' }, { status: 500 });
-  }
+	} catch (error) {
+		console.error("Ошибки при запросе при получении товара:", error);
+		return [];
+	}
 }
-

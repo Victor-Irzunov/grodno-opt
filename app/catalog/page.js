@@ -1,6 +1,3 @@
-
-
-import { data } from "@/constans/Data"
 import Catalog from "@/components/catalog/Catalog"
 import { PrismaClient } from '@prisma/client';
 
@@ -15,8 +12,11 @@ async function getData() {
 			}
 		}
 		);
-		console.log("🚀 🚀 🚀  _ getData _ data:", data)
-		return data || [];
+		const serializedProducts = data.map((product) => ({
+			...product,
+			price: product.price.toString(), // Преобразуем Decimal в строку
+		 }));
+		return serializedProducts || [];
 	} catch (error) {
 		console.error("Ошибки при запросе:", error);
 		return [];

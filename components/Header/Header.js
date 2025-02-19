@@ -10,7 +10,7 @@ import phoneNumbers from "@/config/config";
 import { Affix } from "antd";
 
 const Header = observer(() => {
-	const { dataApp, user } = useContext(MyContext);
+	const { dataApp, user, products } = useContext(MyContext);
 	const pathname = usePathname()
 	const [menuOpen, setMenuOpen] = useState(false);
 	const [menuOpen2, setMenuOpen2] = useState(false);
@@ -21,6 +21,11 @@ const Header = observer(() => {
 	const [scrollPosition, setScrollPosition] = useState(0);
 	// const [isActive, setIsActive] = useState(false);
 	const searchInputRef = useRef(null);
+	//   const [categories, setCategories] = useState([]);
+
+
+
+	const categories = Array.from(new Map(products.map(item => [item.category.id, { id: item.category.id, title: item.category.title }])).values());
 
 
 	const getBasePath = (pathname) => {
@@ -115,11 +120,15 @@ const Header = observer(() => {
 		user.setUser({})
 	}
 
+	const hangleCategoryId = (id) => {
+		dataApp.setCatalogId(id)
+	}
+
 
 	const filteredProducts = searchProducts(searchQuery);
 
 	return (
-		<header className={`${pathname === '/super-admin'? 'hidden': 'block'}`}>
+		<header className={`${pathname === '/super-admin' ? 'hidden' : 'block'}`}>
 			<div className={`sd:py-1.5 xz:py-0.5 bg-blue-500 text-white`}
 			>
 				<div className='container mx-auto flex justify-between items-center'>
@@ -131,7 +140,7 @@ const Header = observer(() => {
 					<div className='flex xz:justify-between sd:justify-end items-center space-x-3'>
 
 						<a href={`tel:${phoneNumbers.mainPhoneLink}`} className={`sd:flex xz:hidden btn btn-xs sd:bg-white xz:bg-transparent sd:text-black xz:text-white border-none rounded-sm xz:text-[10px] sd:text-xs font-light`}>
-						<Image src='/svg/phone-black.svg' alt='Телефон' width={18} height={18} />
+							<Image src='/svg/phone-black.svg' alt='Телефон' width={18} height={18} />
 							{phoneNumbers.mainPhone}
 						</a>
 						<Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/`} className={`${pathname === '/' ? 'sd:flex xz:hidden' : 'sd:hidden xz:hidden'} btn btn-xs bg-green-500 border-none rounded-sm text-white xz:text-[10px] sd:text-xs`}>
@@ -152,7 +161,7 @@ const Header = observer(() => {
 									<ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-sm text-black z-[1] w-52 p-2 shadow">
 										<li>
 											<Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/moj-kabinet/`}>
-											Мой кабинет
+												Мой кабинет
 											</Link>
 										</li>
 										<li>
@@ -181,7 +190,6 @@ const Header = observer(() => {
 					</div>
 				</div>
 			</div>
-
 
 			<div className={`h-screen w-full absolute top-20 left-0 ${submenuOpen ? 'block backdrop-blur-xl bg-gradient-to-b from-white/85 to-white/0' : 'hidden'}`} />
 
@@ -227,15 +235,30 @@ const Header = observer(() => {
 										<p className='font-light text-xs mb-3 text-gray-500'>
 											Каталог
 										</p>
-										<ul className="text-xl font-semibold text-black">
-											<li className="mb-2">
-												<Link
-													href={`${process.env.NEXT_PUBLIC_BASE_URL}/iphones`}
-													onClick={handleClick}
-												>
-													Просмотреть все модели iPhone
-												</Link>
-											</li>
+										<ul className="text-gray-700 grid grid-cols-3">
+											{
+												categories && categories.length ?
+													categories.map(el => {
+														return (
+															<li
+																key={el.id}
+																className="mb-2 cursor-pointer hover:text-primary"
+																onClick={() => {
+																	hangleCategoryId(el.id)
+																}}
+															>
+																<Link href='/catalog' className="cursor-pointer text-sm">
+																	{el.title}
+																</Link>
+															</li>
+														)
+													})
+													:
+													<p className=''>
+														Загрузка категории....
+													</p>
+											}
+
 										</ul>
 									</div>
 								</div>
@@ -539,52 +562,41 @@ const Header = observer(() => {
 					</div>
 
 
-
-
-
-
-
-
 					{/* Mobile menu */}
 
 					<div className={`mobile-menu ${menuOpen2 ? 'open' : ''} z-40`}>
 						<div className='container mx-auto px-7 pt-16 h-[90vh] relative'>
 							<ul className={`text-xl font-semibold ${submenuMobilOpen ? 'hidden' : ''}`}>
-								<Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/`}>
-									<li
-										className='mb-5'
-										onClick={handleMouseLeave}
-									>
-										Apple
-									</li>
-								</Link>
-								<li
-									className='mb-5'
-									onClick={() => handleClickMenuMobil('iPhone')}
-								>
-									iPhone
-								</li>
-								<li
-									className='mb-5'
-									onClick={() => handleClickMenuMobil('iPad')}
-								>
-									iPad
-								</li>
-								<li
-									className='mb-5'
-									onClick={() => handleClickMenuMobil('AirPods')}
-								>
-									AirPods
-								</li>
+								{
+									categories && categories.length ?
+										categories.map(el => {
+											return (
+												<li
+													key={el.id}
+													className="mb-2 cursor-pointer hover:text-primary"
+													onClick={() => {
+														hangleCategoryId(el.id)
+													}}
 
-								<li
-									className=''
-									onClick={toggleMenu}
-								>
-									Контакты
-								</li>
+												>
+													<Link
+														onClick={toggleMenu}
+														href='/catalog'
+														className="cursor-pointer text-sm"
+													>
+														{el.title}
+													</Link>
+												</li>
+											)
+										})
+										:
+										<p className=''>
+											Загрузка категории....
+										</p>
+								}
+
 							</ul>
-							<div className={`text-sm ${submenuMobilOpen === 'iPhone' ? 'block' : 'hidden'}`}>
+							{/* <div className={`text-sm ${submenuMobilOpen === 'iPhone' ? 'block' : 'hidden'}`}>
 								<div
 									className='flex items-center mb-5 z-50'
 									onClick={handleExitMenuMobil}
@@ -699,7 +711,7 @@ const Header = observer(() => {
 									</li>
 
 								</ul>
-							</div>
+							</div> */}
 
 							<div className='absolute bottom-7 right-4 text-right'>
 								<p className='mb-1 text-xs text-gray-400 font-light'>
@@ -709,8 +721,9 @@ const Header = observer(() => {
 									Телефон магазина
 								</p>
 								<div className='text-sm'>
-									<a href="tel:80333511597">
-										+375 33 351-15-97
+									<a href={`tel:${phoneNumbers.mainPhoneLink}`} className={`xz:text-[10px] sd:text-xs font-light flex`}>
+										<Image src='/svg/phone-black.svg' alt='Телефон' width={18} height={18} className="mr-1" />
+										{phoneNumbers.mainPhone}
 									</a>
 								</div>
 							</div>

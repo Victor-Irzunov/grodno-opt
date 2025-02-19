@@ -661,4 +661,8 @@ where(.css-dev-only-do-not-override-161f05s).ant-input-group >.ant-input:last-ch
  
  
 
+:where(.css-dev-only-do-not-override-161f05s).ant-form-item-vertical .ant-form-item-label, :where(.css-dev-only-do-not-override-161f05s).ant-col-24.ant-form-item-label, :where(.css-dev-only-do-not-override-161f05s).ant-col-xl-24.ant-form-item-label{
+	padding-bottom: 0px;
+}
+
  

@@ -61,9 +61,6 @@ export async function POST(req) {
   }
 }
 
-
-
-
 export async function GET(req) {
   try {
     const groups = await prisma.group.findMany();
@@ -75,3 +72,29 @@ export async function GET(req) {
   }
 }
 
+export async function PUT(req) {
+  console.log('--------------------------')
+  try {
+    const body = await req.json();
+    const { discounts } = body;
+    console.log("🚀 🚀 🚀  _ PUT _ discounts:", discounts)
+
+    if (!discounts || !Array.isArray(discounts)) {
+      return NextResponse.json({ message: 'Некорректные данные' }, { status: 400 });
+    }
+
+    const updatePromises = discounts.map(({ groupId, discount }) => 
+      prisma.group.update({
+        where: { id: Number(groupId) },
+        data: { discount: Number(discount) },
+      })
+    );
+
+    await Promise.all(updatePromises);
+
+    return NextResponse.json({ message: 'Скидки успешно обновлены' }, { status: 200 });
+  } catch (error) {
+    console.error('Ошибка при обновлении скидок:', error);
+    return NextResponse.json({ message: 'Ошибка сервера при обновлении скидок' }, { status: 500 });
+  }
+}

@@ -11,7 +11,7 @@ const FormOrder = ({ selectedProduct, closeModal, setIsFormSubmitted, title, btn
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		let messageForm = `<b>Заказ с сайта Автосалона:</b>\n`;
+		let messageForm = `<b>Заказ с сайта Опт Гродно:</b>\n`;
 		messageForm += `<b>${selectedProduct || 'Узнать стоимость'} </b>\n`;
 		messageForm += `<b>--------------- </b>\n`;
 		messageForm += `<b>Телефон:</b> <a href='tel:${tel}'>${tel}</a>\n`;
@@ -112,31 +112,7 @@ const FormOrder = ({ selectedProduct, closeModal, setIsFormSubmitted, title, btn
 						</span>
 					</div>
 				</div>
-				{/* {
-					!no ?
-						<div className="form-control mt-3">
-							<label className="label">
-								<span className="label-text">Выберите услугу</span>
-								<span className="label-text-alt">Необязательное поле</span>
-							</label>
-							<select
-								name="serviceType"
-								value={formData.serviceType}
-								onChange={handleChange}
-								className="select select-bordered xz:select-sm sd:select-lg select-lg"
-							>
-								<option value="">Выберите услугу...</option>
-								<option value="Диагностика автомобиля">Диагностика автомобиля</option>
-								<option value="ТО автомобиля">ТО автомобиля</option>
-								<option value="Ремонт подвески">Ремонт подвески</option>
-								<option value="Ремонт тормозной системы">Ремонт тормозной системы</option>
-								<option value="Ремонт системы охлаждения">Ремонт системы охлаждения</option>
-								<option value="Другое">Другое</option>
-							</select>
-						</div>
-						:
-						null
-				} */}
+			
 
 				{
 					!no
