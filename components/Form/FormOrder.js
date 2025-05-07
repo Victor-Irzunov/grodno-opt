@@ -3,20 +3,43 @@ import { sendOrderTelegram } from '@/http/telegramAPI';
 import { useState } from 'react';
 import InputMask from 'react-input-mask';
 
-const FormOrder = ({ selectedProduct, closeModal, setIsFormSubmitted, title, btn, no }) => {
-	const [formData, setFormData] = useState({ phone: '', message: '', question: '', serviceType: '' });
-	const [tel, setTel] = useState('')
-	const [alertActive, setAlertActive] = useState(false)
+const FormOrder = ({ selectedProduct, closeModal, setIsFormSubmitted, title, btn, no, user }) => {
+	const [formData, setFormData] = useState({ phone: '', message: '', question: '', serviceType: '', address: '', email: '' });
+	const [tel, setTel] = useState('');
+	const [alertActive, setAlertActive] = useState(false);
+	const [alertActive2, setAlertActive2] = useState(false);
+	const [alertActive3, setAlertActive3] = useState(false);
 	const [alertText, setAlertText] = useState('');
+	const [alertText2, setAlertText2] = useState('');
+	const [alertText3, setAlertText3] = useState('');
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		let messageForm = `<b>Заказ с сайта Опт Гродно:</b>\n`;
-		messageForm += `<b>${selectedProduct || 'Узнать стоимость'} </b>\n`;
+		if (!formData.address.trim()) {
+			setAlertText2('Введите адрес');
+			setAlertActive2(true);
+			setTimeout(() => {
+				setAlertActive2(false);
+			}, 4000);
+			return;
+		}
+
+		if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+			setAlertText3('Введите корректный email');
+			setAlertActive3(true);
+			setTimeout(() => setAlertActive3(false), 4000);
+			return;
+		}
+
+
+		let messageForm = `<b>Заявка с сайта Опт Гродно:</b>\n`;
+		messageForm += `<b>${selectedProduct || 'Узнать'} </b>\n`;
 		messageForm += `<b>--------------- </b>\n`;
 		messageForm += `<b>Телефон:</b> <a href='tel:${tel}'>${tel}</a>\n`;
+		messageForm += `<b>Email:</b> ${formData.email} \n`;
 		messageForm += `<b>--------------- </b>\n`;
-		// messageForm += `<b>Услуга: ${formData.serviceType || '-'} </b>\n`;
+		messageForm += `<b>Адрес:</b> ${formData.address} \n`;
+		messageForm += `<b>Название мастерской:</b> ${formData.workshop || '-'} \n`;
 		messageForm += `<b>--------------- </b>\n`;
 		messageForm += `<b>Сообщение: ${formData.message || '-'} </b>\n`;
 
@@ -33,7 +56,7 @@ const FormOrder = ({ selectedProduct, closeModal, setIsFormSubmitted, title, btn
 		sendOrderTelegram(messageForm)
 			.then(data => {
 				if (data.ok) {
-					window.location.href = '/thank-you';
+					// window.location.href = '/thank-you';
 					if (!no) {
 						setIsFormSubmitted(true);
 					}
@@ -112,7 +135,58 @@ const FormOrder = ({ selectedProduct, closeModal, setIsFormSubmitted, title, btn
 						</span>
 					</div>
 				</div>
-			
+
+				{/* Поле Email */}
+				<div className="form-control mt-3">
+					<label className="label">
+						<span className="label-text">Email</span>
+						<span className="label-text-alt">Обязательное поле</span>
+					</label>
+					<input
+						type="email"
+						name="email"
+						value={formData.email}
+						onChange={handleChange}
+						className={`input input-bordered bg-white ${alertActive3 ? 'input-error' : ''}`}
+						placeholder="Введите ваш email"
+					/>
+					{alertActive3 && <div className="label-text-alt text-red-300 mt-2">{alertText3}</div>}
+				</div>
+
+				{/* Поле Адрес */}
+				<div className="form-control mt-3">
+					<label className="label">
+						<span className="label-text">Адрес мастерской</span>
+						<span className="label-text-alt">Обязательное поле</span>
+					</label>
+					<input
+						type="text"
+						name="address"
+						value={formData.address}
+						onChange={handleChange}
+						className="input input-bordered bg-white"
+						placeholder="Введите ваш адрес"
+					/>
+				</div>
+				{/* Ошибка отображения */}
+				{alertActive2 && <div className="label-text-alt text-red-300 mt-2">{alertText2}</div>}
+
+				{/* Поле Название мастерской */}
+				<div className="form-control mt-3">
+					<label className="label">
+						<span className="label-text">Название мастерской</span>
+						<span className="label-text-alt">Необязательное поле</span>
+					</label>
+					<input
+						type="text"
+						name="workshop"
+						value={formData.workshop}
+						onChange={handleChange}
+						className="input input-bordered bg-white"
+						placeholder="Введите название мастерской"
+					/>
+				</div>
+
 
 				{
 					!no

@@ -1,11 +1,14 @@
 "use client"
-import { login } from '@/http/userAPI';
+import { MyContext } from '@/contexts/MyContextProvider';
+import { login, dataUser } from '@/http/userAPI';
+import { message } from 'antd';
 import { useRouter } from "next/navigation";
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { RiEyeLine, RiEyeOffLine } from 'react-icons/ri';
 
+
 const LoginForm = ({ setIsActive, search }) => {
-	const [isActiveAlert, setIsActiveAlert] = useState(false)
+	const { user } = useContext(MyContext);
 	const [formData, setFormData] = useState({
 		email: '',
 		password: '',
@@ -24,26 +27,29 @@ const LoginForm = ({ setIsActive, search }) => {
 	};
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		login(formData)
-			.then(data => {
-				if (data) {
-					setIsActiveAlert(true)
-					setFormData({
-						email: '',
-						password: '',
-					});
-					setTimeout(() => {
-						setIsActiveAlert(false)
-						if (data.isAdmin) {
-							router.push('/super-admin')
-						}
-						else {
-							router.push('/moj-kabinet')
-						}
-					}, 2000)
-				}
-			})
+		const tokenData = await login(formData);
+
+		if (tokenData?.error) {
+			message.error(tokenData.error)
+			return;
+		}
+
+		const userDataFull = await dataUser(); // ВАЖНО: обновляем mobx данными
+		user.setIsAuth(true);
+		user.setUserData(userDataFull);
+
+		message.success('Вы авторизованы!');
+		setFormData({ email: '', password: '' });
+
+		setTimeout(() => {
+			if (tokenData.isAdmin) {
+				router.push('/super-admin');
+			} else {
+				router.push('/moj-kabinet');
+			}
+		}, 500);
 	};
+
 	return (
 		<>
 			<form onSubmit={handleSubmit} className="space-y-4">
@@ -92,23 +98,21 @@ const LoginForm = ({ setIsActive, search }) => {
 					</button>
 				</div>
 			</form>
-			<div className='mt-5'>
-				У вас нет аккаунта? <button
-					className="btn btn-link"
-					onClick={() => setIsActive(false)}
-				>
-					Зарегистрироваться
-				</button>
-			</div>
 			{
-				isActiveAlert ?
-					<div role="alert" className="alert alert-success absolute top-4 left-0 right-0">
-						<svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-						<span>Вы авторизованы!</span>
+				user.userData?.isAdmin ?
+					<div className='mt-5'>
+						У вас нет аккаунта? <button
+							className="btn btn-link"
+							onClick={() => setIsActive(false)}
+						>
+							Зарегистрироваться
+						</button>
 					</div>
 					:
 					null
 			}
+
+
 		</>
 	);
 };

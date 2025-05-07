@@ -30,8 +30,6 @@ export default function Cart() {
 		router.back();
 	};
 
-
-
 	return (
 		<main className="">
 			<div className='pt-10 container mx-auto'>

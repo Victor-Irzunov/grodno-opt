@@ -91,11 +91,6 @@ const EditDiscountGroupAdmin = () => {
 				groups={groups}
 				categories={categories}
 			/>
-
-
-		
-
-		
 		</div>
 	)
 }

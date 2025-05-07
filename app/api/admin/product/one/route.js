@@ -9,7 +9,6 @@ const prisma = new PrismaClient();
 export async function POST(req) {
   try {
     const formData = await req.formData();
-    console.log("🚀 🚀 🚀  _ POST _ formData:", formData);
 
     const title = formData.get('title');
     const article = formData.get('article');

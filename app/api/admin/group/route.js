@@ -73,11 +73,9 @@ export async function GET(req) {
 }
 
 export async function PUT(req) {
-  console.log('--------------------------')
   try {
     const body = await req.json();
     const { discounts } = body;
-    console.log("🚀 🚀 🚀  _ PUT _ discounts:", discounts)
 
     if (!discounts || !Array.isArray(discounts)) {
       return NextResponse.json({ message: 'Некорректные данные' }, { status: 400 });

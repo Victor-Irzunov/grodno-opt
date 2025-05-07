@@ -9,6 +9,8 @@
   }
 }
 
+  
+
 @layer components {
   .custom-gradient-border {
     @apply w-full;
@@ -665,4 +667,13 @@ where(.css-dev-only-do-not-override-161f05s).ant-input-group >.ant-input:last-ch
 	padding-bottom: 0px;
 }
 
+ 
+.white-text input {
+	color: white !important;
+ }
+ 
+ .white-placeholder::placeholder {
+	color: white !important;
+	opacity: 1;
+ }
  

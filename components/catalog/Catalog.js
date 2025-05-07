@@ -12,7 +12,6 @@ import { useSearchParams } from 'next/navigation';
 import { transliterate } from "@/transliterate/transliterate";
 
 const Catalog = observer(({ data }) => {
-  console.log("🚀 🚀 🚀  _ Catalog _ data:", data)
   const [sortOrder, setSortOrder] = useState("asc");
   const [modalImage, setModalImage] = useState(null);
   const [quantities, setQuantities] = useState({});
@@ -78,21 +77,41 @@ const Catalog = observer(({ data }) => {
     }));
   };
 
-  const handleAddToCart = (item, img) => {
+  // const handleAddToCart = (item, img) => {
+  //   const cart = JSON.parse(localStorage.getItem("parts")) || [];
+  //   const existingItemIndex = cart.findIndex(cartItem => cartItem.id === item.id);
+  //   if (existingItemIndex !== -1) {
+  //     cart[existingItemIndex].quantity += quantities[item.id] || 1;
+  //   } else {
+  //     cart.push({ ...item, quantity: quantities[item.id] || 1 });
+  //   }
+  //   localStorage.setItem("parts", JSON.stringify(cart));
+  //   updateIsState()
+  //   document.getElementById('my_modal_1').showModal()
+  //   setTimeout(() => {
+  //     document.getElementById('my_modal_1').close()
+  //   }, 4000)
+  // };
+
+  const handleAddToCart = (item) => {
     const cart = JSON.parse(localStorage.getItem("parts")) || [];
     const existingItemIndex = cart.findIndex(cartItem => cartItem.id === item.id);
+    const groupDiscount = item.group?.discount ? parseFloat(item.group.discount) : 0;
+    const discountedPrice = item.price * (1 - groupDiscount / 100);
+
     if (existingItemIndex !== -1) {
       cart[existingItemIndex].quantity += quantities[item.id] || 1;
     } else {
-      cart.push({ ...item, quantity: quantities[item.id] || 1 });
+      cart.push({ ...item, price: discountedPrice.toFixed(2), quantity: quantities[item.id] || 1 });
     }
     localStorage.setItem("parts", JSON.stringify(cart));
-    updateIsState()
-    document.getElementById('my_modal_1').showModal()
+    updateIsState();
+    document.getElementById('my_modal_1').showModal();
     setTimeout(() => {
-      document.getElementById('my_modal_1').close()
-    }, 4000)
+      document.getElementById('my_modal_1').close();
+    }, 4000);
   };
+
 
   const convertPrice = (price) => {
     if (dataApp.currency === 'BYN') {
@@ -108,9 +127,23 @@ const Catalog = observer(({ data }) => {
     }
   };
 
+  // const oneProduct = (el) => {
+  //   setProd(el)
+  // }
+
   const oneProduct = (el) => {
-    setProd(el)
-  }
+    const discountRate = el.group.discount ? parseFloat(el.group.discount) : 0; // Получаем скидку, если она есть
+    const originalPrice = parseFloat(el.price); // Начальная цена
+    const discountedPrice = originalPrice * (1 - discountRate / 100); // Пересчет цены со скидкой
+    
+    const productWithDiscount = {
+      ...el,
+      discountedPrice: discountedPrice.toFixed(2), // Сохраняем цену со скидкой
+    };
+  
+    setProd(productWithDiscount); // Обновляем состояние с новым объектом
+  };
+  
 
   const linkTransliterate = (title) => {
     return transliterate(title)
@@ -288,7 +321,7 @@ const Catalog = observer(({ data }) => {
               }
             </div>
             <strong className="text-2xl font-medium text-gray-800">
-              {dataApp.currency === 'USD' ? `$${prod.price}` : `${convertPrice(prod.price)} BYN`}
+              {dataApp.currency === 'USD' ? `$${prod.discountedPrice}` : `${convertPrice(prod.discountedPrice)} BYN`}
             </strong>
           </div>
           <div className="modal-action">
@@ -301,6 +334,7 @@ const Catalog = observer(({ data }) => {
           </div>
         </div>
       </dialog>
+
 
       <div className={`fixed inset-0 bg-black bg-opacity-50 transition-opacity ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`} onClick={() => setIsOpen(false)}></div>
       <div className={`fixed right-0 top-0 z-50 h-full w-64 bg-white shadow-lg transform transition-transform ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>

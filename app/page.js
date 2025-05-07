@@ -1,14 +1,13 @@
 "use client"
+import BtnComp from '@/components/btn/BtnComp';
 import phoneNumbers from '@/config/config';
-import { GetGoogle } from '@/http/adminAPI';
+import { MyContext } from '@/contexts/MyContextProvider';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-
+import { useContext } from 'react';
 
 export default function Home() {
- 
-
+  const { dataApp, user, products } = useContext(MyContext);
 
   return (
     <main className="">
@@ -39,9 +38,11 @@ export default function Home() {
                 <Image src='/svg/phone-white.svg' alt='Телефон для заказа оптом запчастей' width={20} height={20} className='sd:hidden xz:block' />
                 {phoneNumbers.mainPhone}
               </a>
-              <Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/`} className='flex btn bg-gradient-to-r from-sky-500 to-indigo-500 border-none rounded-sm text-white sd:w-auto xz:w-full'>
-                Стать партнером
-              </Link>
+
+
+              <div className=''>
+                <BtnComp title='Стать партнером' index={359} />
+              </div>
             </div>
           </div>
         </div>
@@ -66,10 +67,18 @@ export default function Home() {
                   Добро пожаловать в Proparts.by – ваш надежный оптовый поставщик запасных частей для мобильных телефонов. Мы предлагаем широкий ассортимент качественных комплектующих по выгодным ценам. Надежность и оперативность – наши главные приоритеты!
                 </p>
 
-                <Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/login`} className='btn btn-primary rounded-sm text-white mt-7'>
-                  Личный кабинет
-                </Link>
+                {
+                  user.isAuth ?
+                    <Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/moj-kabinet`} className='btn btn-primary rounded-sm text-white mt-7'>
+                      Личный кабинет
+                    </Link>
+                    :
+                    <Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/login`} className='btn btn-primary rounded-sm text-white mt-7'>
+                      Личный кабинет
+                    </Link>
+                }
               </div>
+
 
               <div className='sd:w-1/2 xz:w-full'>
                 <Image src='/fon/fon2.webp' alt='Фоновое изображение' width={1733} height={1080} className='rounded-sm' />

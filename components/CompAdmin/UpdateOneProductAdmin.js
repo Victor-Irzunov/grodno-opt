@@ -1,5 +1,4 @@
 import GetOneProductForm from "../FormsAdmin/GetOneProductForm"
-import UpdateOneProductForm from "../FormsAdmin/UpdateOneProductForm"
 
 
 const UpdateOneProductAdmin = () => {

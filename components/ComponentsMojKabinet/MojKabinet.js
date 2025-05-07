@@ -5,18 +5,21 @@ import LichnyeDannye from "./LichnyeDannye";
 import LichnyjSchet from "./LichnyjSchet";
 
 const items = [
-  { src: '/svg/order.svg', text: 'Текущие заказы', render: () => <TekushchieZakazy /> },
-  { src: '/svg/card.svg', text: 'Личный счёт', render: () => <LichnyjSchet /> },
-  { src: '/svg/user3.svg', text: 'Личные данные', render: () => <LichnyeDannye /> },
-  { src: '/svg/order2.svg', text: 'История заказов', render: () => <IstoriyaZakazov /> },
+  { src: '/svg/order.svg', text: 'Текущие заказы', page: 'TekushchieZakazy' },
+  { src: '/svg/card.svg', text: 'Личный счёт', page: 'LichnyjSchet' },
+  { src: '/svg/user3.svg', text: 'Личные данные', page: 'LichnyeDannye' },
+  { src: '/svg/order2.svg', text: 'История заказов', page: 'IstoriyaZakazov' },
 ];
 
-const MojKabinet = ({ setActiveComponent }) => {
+const MojKabinet = ({ setActiveComponent, setActiveTitle }) => {
   return (
     <div className='grid sd:grid-cols-2 xz:grid-cols-2 gap-4'>
       {items.map((item, index) => (
         <div
-          onClick={() => setActiveComponent(item.render())}
+          onClick={() => {
+            setActiveComponent(item.page)
+            setActiveTitle(item.text)
+          }}
           key={index}
           className='hover:bg-slate-50 hover-transition cursor-pointer border flex flex-col justify-center items-center rounded-sm hover:shadow-xl sd:p-8 xz:p-4'
         >

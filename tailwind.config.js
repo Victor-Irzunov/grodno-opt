@@ -6,6 +6,9 @@ module.exports = {
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
+    // ⛔ перемещаем опцию СЮДА
+    unstable_defaultOkLchColors: false,
+
     extend: {
       screens: {
         xz: "320px",

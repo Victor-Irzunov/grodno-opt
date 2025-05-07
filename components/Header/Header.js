@@ -8,6 +8,7 @@ import { usePathname } from 'next/navigation';
 import { data } from "@/constans/Data";
 import phoneNumbers from "@/config/config";
 import { Affix } from "antd";
+import BtnComp from "../btn/BtnComp";
 
 const Header = observer(() => {
 	const { dataApp, user, products } = useContext(MyContext);
@@ -143,9 +144,10 @@ const Header = observer(() => {
 							<Image src='/svg/phone-black.svg' alt='Телефон' width={18} height={18} />
 							{phoneNumbers.mainPhone}
 						</a>
-						<Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/`} className={`${pathname === '/' ? 'sd:flex xz:hidden' : 'sd:hidden xz:hidden'} btn btn-xs bg-green-500 border-none rounded-sm text-white xz:text-[10px] sd:text-xs`}>
-							Купить оптом
-						</Link>
+					
+						<div className={`${pathname === '/' ? 'sd:flex xz:hidden' : 'sd:hidden xz:hidden'}`}>
+							<BtnComp title='Купить оптом' red index={358} />
+						</div>
 
 						{
 							user.isAuth ?
@@ -160,9 +162,17 @@ const Header = observer(() => {
 									</div>
 									<ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-sm text-black z-[1] w-52 p-2 shadow">
 										<li>
-											<Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/moj-kabinet/`}>
-												Мой кабинет
-											</Link>
+											{
+												user?.userData?.isAdmin ?
+													<Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/super-admin/`}>
+														Админка
+													</Link>
+													:
+													<Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/moj-kabinet/`}>
+														Мой кабинет
+													</Link>
+											}
+
 										</li>
 										<li>
 											<div
@@ -306,13 +316,13 @@ const Header = observer(() => {
 								className=''
 								onClick={() => handleMouseEnter('search')}
 							>
-								<Image
+								{/* <Image
 									src={`/svg/search.svg`}
 									onClick={toggleSearch}
 									className="cursor-pointer"
 									alt='Поиск товара по сайту'
 									width={20} height={20}
-								/>
+								/> */}
 
 								{/* desktop search */}
 								{submenuOpen === 'search' && (
@@ -596,122 +606,7 @@ const Header = observer(() => {
 								}
 
 							</ul>
-							{/* <div className={`text-sm ${submenuMobilOpen === 'iPhone' ? 'block' : 'hidden'}`}>
-								<div
-									className='flex items-center mb-5 z-50'
-									onClick={handleExitMenuMobil}
-								>
-									<Image src='/svg/arrow-left.svg' alt='Стрелка возврата в главное меню' width={20} height={10} />
-									<p className='font-light text-xs ml-2'>назад</p>
-								</div>
-								<ul className="font-semibold text-base">
-									<li className="mb-2">
-										<Link
-											href={`${process.env.NEXT_PUBLIC_BASE_URL}/iphones`}
-											onClick={toggleMenu}
-										>
-											Просмотреть все модели iPhone
-										</Link>
-									</li>
-									<li className="mb-2">
-										<Link
-											href={`${process.env.NEXT_PUBLIC_BASE_URL}/iphones/iphone-16`}
-											onClick={toggleMenu}
-										>
-											iPhone 16
-										</Link>
-									</li>
-									<li className="mb-2">
-										<Link
-											href={`${process.env.NEXT_PUBLIC_BASE_URL}/iphones/iphone-16-plus`}
-											onClick={toggleMenu}
-										>
-											iPhone 16 Plus
-										</Link>
-									</li>
-
-
-								</ul>
-							</div>
-							<div className={`text-sm ${submenuMobilOpen === 'iPad' ? 'block' : 'hidden'}`}>
-								<div
-									className='flex items-center mb-5 z-50'
-									onClick={handleExitMenuMobil}
-								>
-									<Image src='/svg/arrow-left.svg' alt='Стрелка возврата в главное меню' width={20} height={10} />
-									<p className='font-light uppercase text-xs ml-2'>назад</p>
-								</div>
-								<ul className="font-semibold">
-									<li className="mb-2" onClick={toggleMenu}>
-										<Link
-											href={`${process.env.NEXT_PUBLIC_BASE_URL}/ipads`}
-											onClick={toggleMenu}
-										>
-											Просмотреть все модели iPad
-										</Link>
-									</li>
-									<li className="mb-2" onClick={toggleMenu}>
-										<Link
-											href={`${process.env.NEXT_PUBLIC_BASE_URL}/ipads/ipad-air-2024/`}
-											onClick={toggleMenu}
-										>
-											iPad Air 2024
-										</Link>
-									</li>
-
-
-								</ul>
-							</div>
-							<div className={`text-base ${submenuMobilOpen === 'AirPods' ? 'block' : 'hidden'}`}>
-								<div
-									className='flex items-center mb-5 z-50'
-									onClick={handleExitMenuMobil}
-								>
-									<Image src='/svg/arrow-left.svg' alt='Стрелка возврата в главное меню' width={20} height={10} />
-									<p className='font-light uppercase text-xs ml-2'>назад</p>
-								</div>
-								<ul className="font-semibold">
-									<li className="mb-2" onClick={toggleMenu}>
-										<Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/airpods/`}>
-											Просмотреть все модели AirPods
-										</Link>
-									</li>
-
-								</ul>
-							</div>
-							<div className={`text-base ${submenuMobilOpen === 'Mac' ? 'block' : 'hidden'}`}>
-								<div
-									className='flex items-center mb-5 z-50'
-									onClick={handleExitMenuMobil}
-								>
-									<Image src='/svg/arrow-left.svg' alt='Стрелка возврата в главное меню' width={20} height={10} />
-									<p className='font-light uppercase text-xs ml-2'>назад</p>
-								</div>
-								<ul className="font-semibold">
-									<li className="mb-2" onClick={toggleMenu}>
-										Просмотреть все модели Mac
-									</li>
-
-								</ul>
-							</div>
-							<div className={`text-base ${submenuMobilOpen === 'Watch' ? 'block' : 'hidden'}`}>
-								<div
-									className='flex items-center mb-5 z-50'
-									onClick={handleExitMenuMobil}
-								>
-									<Image src='/svg/arrow-left.svg' alt='Стрелка возврата в главное меню' width={20} height={10} />
-									<p className='font-light uppercase text-xs ml-2'>назад</p>
-								</div>
-								<ul className="font-semibold">
-									<li className="mb-2" onClick={toggleMenu}>
-										Просмотреть все модели Watch
-									</li>
-									<li className="mb-2" onClick={toggleMenu}>
-										Apple Watch Ultra 2
-									</li>
-
-								</ul>
-							</div> */}
+							
 
 							<div className='absolute bottom-7 right-4 text-right'>
 								<p className='mb-1 text-xs text-gray-400 font-light'>

@@ -16,7 +16,7 @@ function UserCart({ data, setData }) {
     const [isActive, setIsActive] = useState(false);
     const orderFormRef = useRef(null);
     const router = useRouter();
-    const { setCount, updateIsState } = useContext(MyContext);
+    const { setCount, updateIsState, user } = useContext(MyContext);
 
     useEffect(() => {
         if (isActive && orderFormRef.current) {
@@ -128,27 +128,17 @@ function UserCart({ data, setData }) {
                     </div>
                 </div>
                 <div className="sd:w-[20rem] xz:w-full flex flex-col gap-6">
-                    <div className="rounded-lg border border-gray-300 p-4 bg-white text-gray-600 flex flex-col">
-                        <span className="pb-2">Есть промокод?</span>
-                        <div className="join">
-                            <input
-                                type="text"
-                                className="w-full input input-bordered input-sm join-item"
-                                placeholder="Введите код"
-                            />
-                            <button className="join-item btn btn-sm btn-outline">Применить</button>
-                        </div>
-                    </div>
+                    
                     <div className="rounded-lg border border-gray-300 p-4 bg-white text-gray-600 flex flex-col gap-1">
                         <div className="flex items-center justify-between">
                             <span>Сумма покупки:</span>
-                            <span>{totalAmount.toFixed(2)} руб</span>
+                            <span>${totalAmount.toFixed(2)}</span>
                         </div>
 
                         <hr className="my-2" />
                         <div className="flex items-center justify-between font-semibold my-2">
                             <span>Итого:</span>
-                            <span>{finalTotal.toFixed(2)} руб.</span>
+                            <span>${finalTotal.toFixed(2)}</span>
                         </div>
                         <button
                             className="btn btn-secondary capitalize text-base"
@@ -158,14 +148,14 @@ function UserCart({ data, setData }) {
                         </button>
                         <div className="pt-4 flex items-center gap-3 text-xs text-gray-500">
                             <RiShieldCheckFill fontSize={22} />
-                            Гарантия заказа. Только свежая выпечка.
+                            Гарантия заказа.
                         </div>
                     </div>
                 </div>
             </div>
             {
                 isActive ?
-                    <OrderFormComp ref={orderFormRef} data={data} setData={setData} setIsActive={setIsActive} />
+                    <OrderFormComp ref={orderFormRef} data={data} setData={setData} setIsActive={setIsActive} user={user} />
                     :
                     null
             }

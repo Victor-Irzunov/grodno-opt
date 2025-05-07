@@ -1,14 +1,15 @@
+
 import { useState } from 'react';
 import { Form, Input, Button } from 'antd';
 import { dataUser2 } from '@/http/userAPI';
 
-export const FormLichnyeDannye = ({ user }) => {
+export const FormLichnyeDannye = ({ user, myStyle }) => {
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [form] = Form.useForm();
 
+
   const onFinish = async (values) => {
-    console.log("🚀 🚀 🚀  _ onFinish _ values:", values);
     const response = await dataUser2({ ...values, phone: values.phone });
     if (response) {
       setToastMessage('Данные сохранены');
@@ -41,40 +42,67 @@ export const FormLichnyeDannye = ({ user }) => {
         onFinishFailed={onFinishFailed}
         initialValues={{
           email: user?.email,
-			  fullName: user?.userData?.fullName,
-			 phone: user?.userData?.phone
-		  }}
-		className='grid sd:grid-cols-2 xz:grid-cols-1 sd:gap-6 xz:gap-0'
+          fullName: user?.userData?.fullName,
+          phone: user?.userData?.phone,
+          address:user?.userData?.address
+        }}
+        className='grid sd:grid-cols-2 xz:grid-cols-1 sd:gap-6 xz:gap-0'
       >
         <Form.Item
-          label="Фамилия Имя Отчество"
+          label={<span style={myStyle ? { color: 'white' } : { color: 'black' }}>Фамилия Имя Отчество</span>}
           name="fullName"
           rules={[{ required: true, message: 'Пожалуйста, введите ФИО' }]}
         >
-          <Input placeholder="Заполните, чтобы мы знали, как к вам обращаться" style={{ borderRadius: '2px' }} />
+          <Input
+            placeholder={`${myStyle ? '': 'Заполните, чтобы мы знали, как к вам обращаться'}`}
+            style={myStyle ? { backgroundColor: '#191919', color: 'white' } : { borderRadius: '2px' }}
+          />
         </Form.Item>
 
         <Form.Item
-          label="E-mail"
+          label={<span style={myStyle ? { color: 'white' } : { color: 'black' }}>E-mail</span>}
           name="email"
           rules={[
             { required: true, message: 'Пожалуйста, введите E-mail' },
             { type: 'email', message: 'Введите корректный E-mail' },
           ]}
         >
-          <Input placeholder="Для отправки уведомлений о статусе заказа" style={{ borderRadius: '2px' }} />
+          <Input
+            placeholder="Для отправки уведомлений о статусе заказа"
+            style={myStyle ? { backgroundColor: '#191919', color: 'white' } : { borderRadius: '2px' }}
+          />
         </Form.Item>
 
         <Form.Item
-          label="Телефон"
+          label={<span style={myStyle ? { color: 'white' } : { color: 'black' }}>Телефон</span>}
           name="phone"
           rules={[{ required: true, message: 'Пожалуйста, введите телефон' }]}
         >
-          <Input placeholder="+375 29 491-19-11"  style={{ width: '100%', borderRadius: '2px' }} />
+          <Input
+            placeholder="+375 29 491-19-11"
+            style={myStyle ? { backgroundColor: '#191919', color: 'white' } : { width: '100%', borderRadius: '2px' }}
+          />
+        </Form.Item>
+
+        <Form.Item
+          label={<span style={myStyle ? { color: 'white' } : { color: 'black' }}>Адрес</span>}
+          name="address"
+          rules={[{ required: true, message: 'Пожалуйста, введите адрес' }]}
+        >
+          <Input
+            placeholder="Город, улица, дом"
+            style={myStyle ? { backgroundColor: '#191919', color: 'white' } : { width: '100%', borderRadius: '2px' }}
+          />
         </Form.Item>
 
         <Form.Item className='sd:mt-7 xz:mt-1'>
-          <Button type="primary" htmlType="submit" style={{ width: '100%', borderRadius: '2px' }}>
+          <Button
+            type="primary"
+            htmlType="submit"
+            color="primary"
+            variant={`${myStyle ? "outlined": ""}`}
+            style={myStyle ? { width: '100%', backgroundColor: '#191919' }: { width: '100%', borderRadius: '2px' }}
+          >
             Сохранить изменения
           </Button>
         </Form.Item>

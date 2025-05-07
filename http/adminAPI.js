@@ -107,6 +107,16 @@ export const getAllProducs = async () => {
 	}
 };
 
+export const getAllPendingOrders = async () => {
+	try {
+		const response = await $authHost.get('api/order');
+		return response.data;
+	} catch (error) {
+		console.error('Ошибка при получении всех заказов:', error);
+		throw error;
+	}
+};
+
 
 export const updateOneProduct = async (product) => {
 	const { data } = await $authHost.put('api/admin/product/one/', product)

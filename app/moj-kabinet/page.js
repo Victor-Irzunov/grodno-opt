@@ -5,60 +5,56 @@ import LichnyjSchet from '@/components/ComponentsMojKabinet/LichnyjSchet';
 import MojKabinet from '@/components/ComponentsMojKabinet/MojKabinet';
 import TekushchieZakazy from '@/components/ComponentsMojKabinet/TekushchieZakazy';
 import { Search } from '@/components/search/Search';
-import { data } from '@/constans/Data';
 import { MyContext } from '@/contexts/MyContextProvider';
 import { observer } from 'mobx-react-lite';
 import Image from 'next/image'
 import { useContext, useEffect, useState } from 'react';
 import { useRouter } from "next/navigation";
+import { getFullUserData } from '@/http/userAPI';
+import Link from 'next/link';
 
-const page = observer(() => {
+const Page = observer(() => {
 	const [searchQuery, setSearchQuery] = useState("");
-	const [searchResults, setSearchResults] = useState(null);
+	const [data, setData] = useState([]);
 	const { user, dataApp, handleCurrencyChange } = useContext(MyContext);
-	const [activeTitle, setActiveTitle] = useState('Мой кабинет')
-	const [activeComponent, setActiveComponent] = useState(<MojKabinet />);
+	const [activeTitle, setActiveTitle] = useState('Мой кабинет');
+	const [activePage, setActivePage] = useState('MojKabinet');
 	const router = useRouter();
 
 	useEffect(() => {
-		setActiveComponent(<MojKabinet setActiveComponent={setActiveComponent} />);
+		getFullUserData()
+			.then(data => {
+				console.log("🚀 🚀 🚀  _ useEffect _ data:", data)
+				if (data) {
+					setData(data);
+				}
+			})
+			.catch(err => {
+				console.log('Ошибка загрузки полных данных пользователя:', err)
+			})
 	}, [])
-
+		
 
 	const asideMenu = [
-		{
-			id: 1,
-			title: 'Мой кабинет',
-			render: () => <MojKabinet setActiveComponent={setActiveComponent} />,
-		},
-		{
-			id: 2,
-			title: 'Текущие заказы',
-			render: () => <TekushchieZakazy setActiveComponent={setActiveComponent} />,
-		},
-		{
-			id: 3,
-			title: 'Личный счёт',
-			render: () => <LichnyjSchet setActiveComponent={setActiveComponent} />,
-		},
-		{
-			id: 4,
-			title: 'Личные данные',
-			render: () => <LichnyeDannye setActiveComponent={setActiveComponent} />,
-		},
-		{
-			id: 5,
-			title: 'История заказов',
-			render: () => <IstoriyaZakazov setActiveComponent={setActiveComponent} />,
-		},
-		{
-			id: 8,
-			title: 'Выйти',
-			exit: true,
-		},
+		{ id: 1, title: 'Мой кабинет', page: 'MojKabinet' },
+		{ id: 2, title: 'Текущие заказы', page: 'TekushchieZakazy' },
+		{ id: 3, title: 'Личный счёт', page: 'LichnyjSchet' },
+		{ id: 4, title: 'Личные данные', page: 'LichnyeDannye' },
+		{ id: 5, title: 'История заказов', page: 'IstoriyaZakazov' },
+		{ id: 8, title: 'Выйти', exit: true },
 	];
 
-
+	const renderComponent = () => {
+		switch (activePage) {
+			case 'MojKabinet': return <MojKabinet setActiveComponent={setActivePage} setActiveTitle={setActiveTitle} />;
+			case 'TekushchieZakazy': return <TekushchieZakazy data={data} setActiveComponent={setActivePage} />;
+			case 'LichnyjSchet': return <LichnyjSchet data={data} setActiveComponent={setActivePage} />;
+			case 'LichnyeDannye': return <LichnyeDannye setActiveComponent={setActivePage} />;
+			case 'IstoriyaZakazov': return <IstoriyaZakazov data={data} setActiveComponent={setActivePage} />;
+			
+			default: return <MojKabinet setActiveComponent={setActivePage} />;
+		}
+	}
 
 	const handleSearchChange = (e) => {
 		const query = e.target.value;
@@ -70,11 +66,13 @@ const page = observer(() => {
 	};
 
 	const exitUser = () => {
-		localStorage.removeItem('token_grodno', data.token)
+		localStorage.removeItem('token_grodno')
 		user.setIsAuth(false)
 		user.setUserData({})
 		user.setUser({})
+		router.push('/login')
 	}
+	
 
 	return (
 		<main className='pt-20'>
@@ -84,9 +82,7 @@ const page = observer(() => {
 
 						<div className='flex space-x-2 items-center mr-5 sd:mb-0 xz:mb-6'>
 							<Image src='/svg/user2.svg' alt='Кабинет пользователя' width={20} height={20} />
-							<h1 className="font-semibold text-lg">
-								Кабинет
-							</h1>
+							<h1 className="font-semibold text-lg">Кабинет</h1>
 						</div>
 
 						<Search
@@ -106,63 +102,53 @@ const page = observer(() => {
 
 						<aside className='sd:block xz:hidden w-1/5'>
 							<ul className='border text-sm text-gray-800'>
-								{asideMenu.map((el, idx) => {
-									return (
-										<li
-											onClick={() => {
-												if (el.exit) {
-													exitUser();
-												} else {
-													setActiveComponent(el.render());
-													setActiveTitle(el.title);
-												}
-											}}
-											key={el.id}
-											className={`p-2 ${idx === asideMenu.length - 1 ? '' : 'border-b'} hover:bg-slate-50 hover-transition cursor-pointer`}>
-											<h3>{el.title}</h3>
-										</li>
-									);
-								})}
+								{asideMenu.map((el, idx) => (
+									<li
+										key={el.id}
+										onClick={() => {
+											if (el.exit) {
+												exitUser();
+											} else {
+												setActiveTitle(el.title);
+												setActivePage(el.page);
+											}
+										}}
+										className={`p-2 ${idx === asideMenu.length - 1 ? '' : 'border-b'} hover:bg-slate-50 hover-transition cursor-pointer`}>
+										<h3>{el.title}</h3>
+									</li>
+								))}
 							</ul>
 						</aside>
 
 						<div className='sd:hidden xz:flex justify-between w-full items-center mb-8'>
-							<div className=''>
-								<h4 className='text-xl font-semibold'>
-									{activeTitle}
-								</h4>
-							</div>
+							<h4 className='text-xl font-semibold'>{activeTitle}</h4>
 
 							<div className="dropdown dropdown-end">
 								<div tabIndex={0} role="button" className="btn">
 									<Image src='/svg/menu.svg' alt='Меню кабинета' width={40} height={40} />
 								</div>
 								<ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
-									{asideMenu.map((el, idx) => {
-										return (
-											<li
-												onClick={() => {
-													if (el.exit) {
-														exitUser();
-													} else {
-														setActiveComponent(el.render());
-														setActiveTitle(el.title)
-													}
-												}}
-												key={el.id}
-												className={`p-2 ${idx === asideMenu.length - 1 ? '' : 'border-b'} hover:bg-slate-50 hover-transition cursor-pointer`}>
-												<h3 className=''>
-													{el.title}
-												</h3>
-											</li>
-										);
-									})}
+									{asideMenu.map((el, idx) => (
+										<li
+											key={el.id}
+											onClick={() => {
+												if (el.exit) {
+													exitUser();
+												} else {
+													setActiveTitle(el.title);
+													setActivePage(el.page);
+												}
+											}}
+											className={`p-2 ${idx === asideMenu.length - 1 ? '' : 'border-b'} hover:bg-slate-50 hover-transition cursor-pointer`}>
+											<h3>{el.title}</h3>
+										</li>
+									))}
 								</ul>
 							</div>
 						</div>
 
 						<div className='sd:w-4/5 xz:w-full'>
-							{activeComponent}
+							{renderComponent()}
 						</div>
 
 					</div>
@@ -172,4 +158,4 @@ const page = observer(() => {
 	)
 });
 
-export default page;
+export default Page;

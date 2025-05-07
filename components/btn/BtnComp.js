@@ -19,7 +19,7 @@ const BtnComp = ({ title, index, center, red, name, wFull }) => {
 	return (
 		<div className={`flex items-center ${center ? 'justify-center' : ''}`}>
 			<button
-				className={`${wFull ? 'w-full': ''} rounded-full text-white ${red ? 'bg-secondary striped-shining-button': 'bg-primary'} btn border-none font-semibold`}
+				className={`${wFull ? 'w-full': ''} rounded-none text-white ${red ? 'btn-xs bg-green-500 border-none rounded-sm text-white xz:text-[10px] sd:text-xs': 'bg-gradient-to-r from-sky-500 to-indigo-500'} btn border-none  font-semibold`}
 				onClick={() => handleOrderClick(name ? name : title)}
 			>
 				{title}

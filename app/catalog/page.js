@@ -4,6 +4,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function getData() {
+
 	try {
 		const data = await prisma.product.findMany({
 			include: {
@@ -14,8 +15,13 @@ async function getData() {
 		);
 		const serializedProducts = data.map((product) => ({
 			...product,
-			price: product.price.toString(), // Преобразуем Decimal в строку
-		 }));
+			price: product.price.toString(),
+			group: {
+				...product.group,
+				discount: product.group?.discount?.toString() ?? null,
+			},
+		}));
+
 		return serializedProducts || [];
 	} catch (error) {
 		console.error("Ошибки при запросе:", error);

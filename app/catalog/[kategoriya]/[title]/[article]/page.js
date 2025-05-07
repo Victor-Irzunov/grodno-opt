@@ -32,10 +32,17 @@ async function getData2() {
 			}
 		}
 		);
-		const serializedProducts = data.map((product) => ({
+
+			const serializedProducts = data.map((product) => ({
 			...product,
-			price: product.price.toString(), // Преобразуем Decimal в строку
-		 }));
+			price: product.price.toString(),
+			group: {
+				...product.group,
+				discount: product.group?.discount?.toString() ?? null,
+			},
+		}));
+		
+
 		return serializedProducts || [];
 	} catch (error) {
 		console.error("Ошибки при запросе:", error);

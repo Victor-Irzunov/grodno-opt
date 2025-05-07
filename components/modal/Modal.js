@@ -25,7 +25,7 @@ const Modal = ({ selectedProduct, closeModal, isFormSubmitted, setIsFormSubmitte
 				:
 				(
 					<div className="modal-box">
-						<p className="text-xl">Ваш заказ успешно отправлен!</p>
+						<p className="text-xl text-black">Ваш заказ успешно отправлен!</p>
 					</div>
 				)
 			}

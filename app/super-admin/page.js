@@ -2,10 +2,15 @@
 import AddCategoryAdmin from "@/components/CompAdmin/AddCategoryAdmin";
 import AddGroupAdmin from "@/components/CompAdmin/AddGroupAdmin";
 import AddOneProductAdmin from "@/components/CompAdmin/AddOneProductAdmin";
+import BalanceAdmin from "@/components/CompAdmin/BalanceAdmin";
 import EditDiscountGroupAdmin from "@/components/CompAdmin/EditDiscountGroupAdmin";
 import MainAdmin from "@/components/CompAdmin/MainAdmin";
+import OrdersOneClient from "@/components/CompAdmin/OrdersOneClient";
 import ProductAdmin from "@/components/CompAdmin/ProductAdmin";
+import RegistrationAdmin from "@/components/CompAdmin/RegistrationAdmin";
+import TekushchieZakazyAdmin from "@/components/CompAdmin/TekushchieZakazyAdmin";
 import UpdateOneProductAdmin from "@/components/CompAdmin/UpdateOneProductAdmin";
+import UserDataAdmin from "@/components/CompAdmin/UserDataAdmin";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -29,6 +34,17 @@ function Page() {
 				return <UpdateOneProductAdmin />;
 			case "EditDiscountGroupAdmin":
 				return <EditDiscountGroupAdmin />;
+			case "userData":
+				return <UserDataAdmin />;
+			case "registration":
+				return <RegistrationAdmin />;
+			case "orders":
+				return <TekushchieZakazyAdmin />;
+			case "balance":
+				return <BalanceAdmin />;
+			case "ordersOneClient":
+				return <OrdersOneClient />;
+
 			default:
 				return <MainAdmin />;
 		}
@@ -40,7 +56,7 @@ function Page() {
 
 				<aside className="w-1/5 bg-[#202020] border-r border-[#2B2B2B] pt-6 px-8">
 					<div>
-						<Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/`} className="">
+						<Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/`} className="cursor-pointer">
 							<Image src="/logo/logo-blue.webp" alt="Логотип" width={150} height={150} />
 						</Link>
 					</div>
@@ -55,6 +71,7 @@ function Page() {
 							<Image src="/svg/main.svg" alt="Главная" width={20} height={20} />
 							<p>Главная</p>
 						</li>
+
 						<li className="hover:bg-[#191919] py-1 px-1 rounded-md">
 							<div className="collapse">
 								<input type="checkbox" />
@@ -126,6 +143,95 @@ function Page() {
 									>
 										• <span>Скидка группы</span>
 									</div>
+								</div>
+							</div>
+						</li>
+
+						<li className="hover:bg-[#191919] py-1 px-1 rounded-md">
+							<div className="collapse">
+								<input type="checkbox" />
+
+								<div className="collapse-title flex space-x-2.5 items-center">
+									<Image src="/svg/user-data.svg" alt="Клиент" width={20} height={20} />
+									<p>Клиент</p>
+								</div>
+
+								<div className="collapse-content pl-10 text-sm">
+									<div
+										onClick={() => setActiveComponent("registration")}
+										className={`pl-0.5 ${activeComponent === "registration" ? "border border-primary rounded-md text-primary bg-[#317bff1a]" : ""}`}
+									>
+										• <span>Регистрация клиента</span>
+									</div>
+
+									<div>
+										<Image src="/svg/vertical-line.svg" alt="Вертикальная линия меню" width={10} height={60} />
+									</div>
+									<div
+										onClick={() => setActiveComponent("userData")}
+										className={`pl-0.5 ${activeComponent === "userData" ? "border border-primary rounded-md text-primary bg-[#317bff1a]" : ""}`}
+									>
+										• <span>Данные клиента</span>
+									</div>
+
+								</div>
+							</div>
+						</li>
+
+						<li className="hover:bg-[#191919] py-1 px-1 rounded-md">
+							<div className="collapse">
+								<input type="checkbox" />
+
+								<div className="collapse-title flex space-x-2.5 items-center">
+									<Image src="/svg/orders.svg" alt="Клиент" width={20} height={20} />
+									<p>
+										Заказы
+									</p>
+								</div>
+
+						
+								<div className="collapse-content pl-10 text-sm">
+									<div
+										onClick={() => setActiveComponent("orders")}
+										className={`pl-0.5 ${activeComponent === "orders" ? "border border-primary rounded-md text-primary bg-[#317bff1a]" : ""}`}
+									>
+										• <span>Текущие заказы</span>
+									</div>
+
+									<div>
+										<Image src="/svg/vertical-line.svg" alt="Вертикальная линия меню" width={10} height={60} />
+									</div>
+									<div
+									onClick={() => setActiveComponent("ordersOneClient")}
+									className={`pl-0.5 ${activeComponent === "ordersOneClient" ? "border border-primary rounded-md text-primary bg-[#317bff1a]" : ""}`}
+									>
+										• <span>Заказы клиента</span>
+									</div>
+
+								</div>
+
+							</div>
+						</li>
+
+						<li className="hover:bg-[#191919] py-1 px-1 rounded-md">
+							<div className="collapse">
+								<input type="checkbox" />
+
+								<div className="collapse-title flex space-x-2.5 items-center">
+									<Image src="/svg/money.svg" alt="Баланс клиента" width={20} height={20} />
+									<p>
+										Баланс
+									</p>
+								</div>
+
+								<div className="collapse-content pl-10 text-sm">
+									<div
+										onClick={() => setActiveComponent("balance")}
+										className={`pl-0.5 ${activeComponent === "balance" ? "border border-primary rounded-md text-primary bg-[#317bff1a]" : ""}`}
+									>
+										• <span>Пополнить баланс</span>
+									</div>
+
 								</div>
 							</div>
 						</li>

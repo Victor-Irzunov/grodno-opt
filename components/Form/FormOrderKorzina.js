@@ -23,7 +23,7 @@ const FormOrderKorzina = ({ closeModalOrder, setIsFormSubmitted, data, setIsActi
 		e.preventDefault();
 		const telWithoutSpaces = tel.replace(/\s/g, '');
 
-		let messageForm = `<b>Заказ с сайта Пекарня:</b>\n`;
+		let messageForm = `<b>Заказ с сайта Гродно опт:</b>\n`;
 		messageForm += `<b> </b>\n`;
 		data.forEach((item, index) => {
 			messageForm += `<b>Товар ${index + 1}:</b> ${item.title}\n`;

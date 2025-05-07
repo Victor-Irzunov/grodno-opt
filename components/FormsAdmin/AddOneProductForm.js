@@ -8,9 +8,6 @@ import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } 
 import { CSS } from '@dnd-kit/utilities';
 import Resizer from "react-image-file-resizer";
 
-const { TextArea } = Input;
-const { Option } = Select;
-
 const resizeFile = (file, width, height, quality = 60) =>
 	new Promise((resolve) => {
 		Resizer.imageFileResizer(

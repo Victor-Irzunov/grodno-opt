@@ -9,29 +9,31 @@ datasource db {
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique
-  password  String
-  isAdmin   Boolean
-  createdAt DateTime  @default(now())
-  userData  UserData? // Обратная связь с UserData
+  id             Int             @id @default(autoincrement())
+  email          String          @unique
+  password       String
+  isAdmin        Boolean
+  createdAt      DateTime        @default(now())
+  userData       UserData? // Обратная связь с UserData
+  wholesaleBuyer WholesaleBuyer? // Связь с WholesaleBuyer
 }
 
 model UserData {
   id        Int      @id @default(autoincrement())
-  fullName  String // ФИО
-  phone     String // Телефон
+  fullName  String
+  address   String
+  phone     String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   userId    Int      @unique
-  user      User     @relation(fields: [userId], references: [id]) // Связь с User
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Category {
   id        Int       @id @default(autoincrement())
   title     String    @unique
-  groups    Group[]   // Связь с группами
-  products  Product[] // Связь с товарами
+  groups    Group[]
+  products  Product[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -39,31 +41,31 @@ model Category {
 model Group {
   id         Int       @id @default(autoincrement())
   title      String
-  categoryId Int        // Связь с категорией
-  category   Category   @relation(fields: [categoryId], references: [id])
-  products   Product[]  // Связь с товарами
-  discount   Decimal?   @db.Decimal(5, 2)  // Скидка в процентах (максимум 99.99%)
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
+  categoryId Int
+  category   Category  @relation(fields: [categoryId], references: [id])
+  products   Product[]
+  discount   Decimal?  @db.Decimal(5, 2)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 }
-
 
 model Product {
-  id           Int       @id @default(autoincrement())
-  title        String
-  status       String    // "В наличии" или "Под заказ"
-  count        Int
-  price        Decimal   @db.Decimal(12, 3)  // Цена с точностью до 3 знаков после запятой
-  article      String    @unique
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  groupId      Int       // Связь с группой товаров
-  categoryId   Int       // Связь с категорией товаров
-  group        Group     @relation(fields: [groupId], references: [id])
-  category     Category  @relation(fields: [categoryId], references: [id])
-  images       Json?     // Массив JSON объектов для изображений
+  id          Int          @id @default(autoincrement())
+  title       String
+  status      String
+  count       Int
+  price       Decimal      @db.Decimal(12, 3)
+  article     String       @unique
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  groupId     Int
+  categoryId  Int
+  group       Group        @relation(fields: [groupId], references: [id])
+  category    Category     @relation(fields: [categoryId], references: [id])
+  images      Json?
+  orderItems  OrderItem[]
+  returnItems ReturnItem[]
 }
-
 
 model PriceHash {
   id        Int      @id @default(autoincrement())
@@ -71,3 +73,93 @@ model PriceHash {
   createdAt DateTime @default(now())
 }
 
+model WholesaleBuyer {
+  id           Int                  @id @default(autoincrement())
+  userId       Int                  @unique
+  user         User                 @relation(fields: [userId], references: [id])
+  balance      Decimal              @db.Decimal(12, 2)
+  debt         Decimal              @default(0.00) @db.Decimal(12, 2)
+  discount     Decimal              @default(0.00) @db.Decimal(5, 2)
+  limit        Decimal              @default(0.00) @db.Decimal(12, 2) // Новое поле лимит
+  orders       Order[]
+  returns      Return[]
+  transactions BalanceTransaction[]
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+}
+
+model BalanceTransaction {
+  id        Int            @id @default(autoincrement())
+  buyerId   Int
+  buyer     WholesaleBuyer @relation(fields: [buyerId], references: [id])
+  amount    Decimal        @db.Decimal(12, 2)
+  type      String
+  createdAt DateTime       @default(now())
+}
+
+model Order {
+  id             Int            @id @default(autoincrement())
+  buyerId        Int
+  buyer          WholesaleBuyer @relation(fields: [buyerId], references: [id])
+  status         String         @default("pending")
+  deliveryStatus String         @default("processing")
+  totalAmount    Decimal        @db.Decimal(12, 2)
+  deliveryCost   Decimal?       @db.Decimal(12, 2) // ← добавлено
+  message        String?
+  shippingInfo   ShippingInfo?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  orderItems     OrderItem[]
+  returns        Return[]
+}
+
+model ShippingInfo {
+  id             Int      @id @default(autoincrement())
+  orderId        Int      @unique
+  order          Order    @relation(fields: [orderId], references: [id])
+  courier        String
+  trackingNumber String?
+  address        String
+  createdAt      DateTime @default(now())
+}
+
+model OrderItem {
+  id         Int          @id @default(autoincrement())
+  orderId    Int
+  order      Order        @relation(fields: [orderId], references: [id])
+  productId  Int
+  product    Product      @relation(fields: [productId], references: [id])
+  quantity   Int
+  price      Decimal      @db.Decimal(12, 2)
+  ReturnItem ReturnItem[]
+}
+
+model Return {
+  id          Int            @id @default(autoincrement())
+  buyerId     Int
+  buyer       WholesaleBuyer @relation(fields: [buyerId], references: [id])
+  orderId     Int
+  order       Order          @relation(fields: [orderId], references: [id])
+  totalRefund Decimal        @db.Decimal(12, 2)
+  reason      String
+  comment     String?        // комментарий от пользователя (необязательный)
+  status      String         @default("pending") // варианты: pending | approved | rejected | returned
+  createdAt   DateTime       @default(now())
+
+  returnItems ReturnItem[]   // связь с конкретными товарами на возврат
+}
+
+model ReturnItem {
+  id           Int        @id @default(autoincrement())
+  returnId     Int
+  return       Return     @relation(fields: [returnId], references: [id])
+
+  productId    Int
+  product      Product    @relation(fields: [productId], references: [id])
+
+  orderItemId  Int
+  orderItem    OrderItem  @relation(fields: [orderItemId], references: [id])
+
+  quantity     Int        // сколько штук возвращает клиент
+  refundAmount Decimal    @db.Decimal(12, 2) // стоимость возврата
+}
