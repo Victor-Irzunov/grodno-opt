@@ -1,12 +1,12 @@
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-	images: {
-	  domains: ['localhost'],
-	},
 	// images: {
-	//   domains: ['xn--80aaf6atok.xn--90ais'],
+	//   domains: ['localhost'],
 	// },
+	images: {
+	  domains: ['hi3310.ru'],
+	},
  };
  
  module.exports = nextConfig;

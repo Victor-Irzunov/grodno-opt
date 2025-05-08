@@ -62,6 +62,7 @@ export async function POST(req) {
 }
 
 export async function GET(req) {
+  console.log('получение всех групп' )
   try {
     const groups = await prisma.group.findMany();
 

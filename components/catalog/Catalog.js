@@ -195,7 +195,7 @@ const Catalog = observer(({ data }) => {
                     <div className='flex justify-between sd:flex-row xz:flex-col'>
                       <div className=''>
                         <Link href={`/catalog/${linkTransliterate(el.category.title)}/${linkTransliterate(el.title)}/${linkTransliterate(el.article)}/`}>
-                          <h3>{el.title} ({el.article})</h3>
+                          <p>{el.title} ({el.article})</p>
                         </Link>
                         <div className='flex items-center text-green-500 mt-1'>
                           <div className="w-1 h-1 rounded-full bg-green-500" />

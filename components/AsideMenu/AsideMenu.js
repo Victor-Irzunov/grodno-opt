@@ -55,7 +55,7 @@ export const AsideMenu = ({ data, setSelectedCategory, flex, selectedCategory, b
                     className="p-2 border-b hover:bg-slate-50 hover-transition cursor-pointer"
                     onClick={() => {
                       hangleCategoryId(el.id)
-                      setIsOpen(false)
+                      // setIsOpen(false)
                     }}
                   >
                     <Link href='/catalog'>

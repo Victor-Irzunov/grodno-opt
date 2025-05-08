@@ -35,6 +35,7 @@ export async function POST(req) {
 
 
 export async function GET(req) {
+  console.log('получение все категории')
   try {
     const categories = await prisma.category.findMany({
       select: {

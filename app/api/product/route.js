@@ -5,6 +5,7 @@ const prisma = new PrismaClient();
 
 
 export async function GET() {
+	console.log('запрос в базу за товаром' )
 	try {
 		const data = await prisma.product.findMany({
 			include: {
@@ -13,6 +14,7 @@ export async function GET() {
 			}
 		}
 		);
+		
 		const serializedProducts = data.map((product) => ({
 			...product,
 			price: product.price.toString(), // Преобразуем Decimal в строку
