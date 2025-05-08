@@ -1,5 +1,9 @@
-import Catalog from "@/components/catalog/Catalog"
 import { PrismaClient } from '@prisma/client';
+import dynamic from "next/dynamic";
+
+const CatalogClient = dynamic(() => import("@/components/catalog/CatalogClient"), {
+	ssr: false,
+ });
 
 const prisma = new PrismaClient();
 
@@ -55,7 +59,7 @@ export default async function Page() {
 
 	return (
 		<main className='py-10'>
-			<Catalog data={data} />
+			<CatalogClient data={data} />
 		</main >
 	)
 }

@@ -8,10 +8,9 @@ import { AsideMenu } from "../AsideMenu/AsideMenu";
 import phoneNumbers from "@/config/config";
 import Link from "next/link";
 import { RiAddFill, RiSubtractFill } from "react-icons/ri";
-import { useSearchParams } from 'next/navigation';
 import { transliterate } from "@/transliterate/transliterate";
 
-const Catalog = observer(({ data }) => {
+const Catalog = observer(({ data, searchParams }) => {
   const [sortOrder, setSortOrder] = useState("asc");
   const [modalImage, setModalImage] = useState(null);
   const [quantities, setQuantities] = useState({});
@@ -19,7 +18,6 @@ const Catalog = observer(({ data }) => {
   const [searchResults, setSearchResults] = useState(null);
   const [filteredData, setFilteredData] = useState(data);
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const searchParams = useSearchParams();
   const { user, dataApp, handleCurrencyChange, updateIsState } = useContext(MyContext);
   const inputRef = useRef(null);
   const [prod, setProd] = useState({})
@@ -77,21 +75,6 @@ const Catalog = observer(({ data }) => {
     }));
   };
 
-  // const handleAddToCart = (item, img) => {
-  //   const cart = JSON.parse(localStorage.getItem("parts")) || [];
-  //   const existingItemIndex = cart.findIndex(cartItem => cartItem.id === item.id);
-  //   if (existingItemIndex !== -1) {
-  //     cart[existingItemIndex].quantity += quantities[item.id] || 1;
-  //   } else {
-  //     cart.push({ ...item, quantity: quantities[item.id] || 1 });
-  //   }
-  //   localStorage.setItem("parts", JSON.stringify(cart));
-  //   updateIsState()
-  //   document.getElementById('my_modal_1').showModal()
-  //   setTimeout(() => {
-  //     document.getElementById('my_modal_1').close()
-  //   }, 4000)
-  // };
 
   const handleAddToCart = (item) => {
     const cart = JSON.parse(localStorage.getItem("parts")) || [];
@@ -127,9 +110,6 @@ const Catalog = observer(({ data }) => {
     }
   };
 
-  // const oneProduct = (el) => {
-  //   setProd(el)
-  // }
 
   const oneProduct = (el) => {
     const discountRate = el.group.discount ? parseFloat(el.group.discount) : 0; // Получаем скидку, если она есть
