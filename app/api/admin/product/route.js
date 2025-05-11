@@ -16,7 +16,7 @@ async function updateGoogleSheet(missingProducts) {
     });
 
     const sheets = google.sheets({ version: 'v4', auth });
-    const spreadsheetId = '1gYVxktxdluIqbeu-EFoV_55xlBHpEjihsM5EVEM4HE0';
+    const spreadsheetId = '1YIgHohucNa1urtDPTrNAAMYzvOZellSWDdHDCX_XM7w';
     const range = 'Лист1!A1:E999';
 
     const values = missingProducts.map((product) => [

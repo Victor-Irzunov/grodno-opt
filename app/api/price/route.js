@@ -1,5 +1,7 @@
 import { google } from 'googleapis';
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req) {
   try {
     const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
@@ -11,7 +13,7 @@ export async function GET(req) {
     });
 
     const sheets = google.sheets({ version: 'v4', auth });
-    const spreadsheetId = '1gYVxktxdluIqbeu-EFoV_55xlBHpEjihsM5EVEM4HE0';
+    const spreadsheetId = '1YIgHohucNa1urtDPTrNAAMYzvOZellSWDdHDCX_XM7w';
     const range = 'Лист1!A1:E999';
 
     const response = await sheets.spreadsheets.values.get({
