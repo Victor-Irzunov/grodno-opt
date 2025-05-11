@@ -568,8 +568,8 @@ const Header = observer(() => {
 						</div>
 					</div>
 					{/* Mobile menu */}
-					<div className={`mobile-menu ${menuOpen2 ? 'open' : ''} z-40`}>
-						<div className='container mx-auto px-7 pt-16 h-[90vh] relative'>
+					<div className={`mobile-menu ${menuOpen2 ? 'open' : ''} z-40 relative`}>
+						<div className='container mx-auto px-7 pt-8 h-screen overflow-y-scroll'>
 							<ul className="menu text-sm">
 								<li>
 									<Link
@@ -582,8 +582,17 @@ const Header = observer(() => {
 								</li>
 
 								<li>
-									<details open>
-										<summary className="text-black">Каталог</summary>
+									{/* <details open> */}
+									<details>
+										<summary className="text-black flex items-center justify-between">
+											<Link
+												href="/catalog"
+												onClick={toggleMenu}
+												className="hover:text-primary block w-full"
+											>
+												Каталог
+											</Link>
+										</summary>
 										<ul>
 											{categories && categories.length ? (
 												categories.map(el => (
@@ -594,7 +603,7 @@ const Header = observer(() => {
 																toggleMenu();
 																hangleCategoryId(el.id);
 															}}
-															className="hover:text-primary"
+															className="hover:text-primary text-xs"
 														>
 															{el.title}
 														</Link>
@@ -606,6 +615,7 @@ const Header = observer(() => {
 										</ul>
 									</details>
 								</li>
+
 
 								<li>
 									<Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/oplata/`}
@@ -652,7 +662,9 @@ const Header = observer(() => {
 								</li>
 							</ul>
 
-							<div className='absolute bottom-7 right-4 text-right'>
+							
+						</div>
+						<div className='absolute bottom-7 right-4 text-right'>
 								<p className='mb-1 text-xs text-gray-400 font-light'>Есть вопросы?</p>
 								<p className='uppercase text-gray-600 text-[9px] mb-1'>Телефон магазина</p>
 								<div className='text-sm'>
@@ -662,7 +674,6 @@ const Header = observer(() => {
 									</a>
 								</div>
 							</div>
-						</div>
 					</div>
 				</nav>
 			</Affix>

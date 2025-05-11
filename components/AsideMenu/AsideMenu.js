@@ -25,18 +25,25 @@ export const AsideMenu = ({ data, setSelectedCategory, flex, selectedCategory, b
   if (!loadedData.length) return null;
 
   return (
-    <aside className={`${block ? 'w-full pt-16': 'sd:block xz:hidden'} ${flex ? 'sd:w-1/5 xz:w-full' : ''}`}>
+    <aside className={`${block ? 'w-full pt-16' : 'sd:block xz:hidden'} ${flex ? 'sd:w-1/5 xz:w-full' : ''}`}>
       <div className='sticky top-24'>
         <div className="flex space-x-2">
           <Image src="/svg/catalog.svg" alt="Каталог" width={12} height={12} />
-          <span className="text-xs text-gray-500">Каталог</span>
+          <span className="text-xs text-gray-500">
+            Каталог
+          </span>
         </div>
         <div className="mt-4">
           {
             flex ?
               <ul className="border text-sm text-gray-800">
+                <li
+                  className={`p-2 border-b hover:bg-slate-50 hover-transition cursor-pointer ${selectedCategory === null ? 'font-bold' : ''}`}
+                  onClick={() => handleCategoryClick(null)}
+                >
+                  <h2 className="flex space-x-1">Все товары</h2>
+                </li>
                 {loadedData.map((el) => (
-
                   <li
                     key={el.id}
                     className="p-2 border-b hover:bg-slate-50 hover-transition cursor-pointer"
@@ -47,23 +54,39 @@ export const AsideMenu = ({ data, setSelectedCategory, flex, selectedCategory, b
                 ))}
               </ul>
               :
-              <ul className="border text-sm text-gray-800">
-                {loadedData.map((el) => (
-
+              <div className=''>
+                <ul className="border text-sm text-gray-800 max-h-[500px] overflow-y-auto">
                   <li
-                    key={el.id}
-                    className="p-2 border-b hover:bg-slate-50 hover-transition cursor-pointer"
+                    className={`p-2 border-b hover:bg-slate-50 hover-transition cursor-pointer ${selectedCategory === null ? 'font-bold' : ''}`}
                     onClick={() => {
-                      hangleCategoryId(el.id)
-                      // setIsOpen(false)
+                      setSelectedCategory(null);
+                      if (setIsOpen) setIsOpen(false);
                     }}
                   >
-                    <Link href='/catalog'>
-                      <h2 className={`flex space-x-1 ${selectedCategory === el.id ? 'font-bold' : ''}`}>{el.title}</h2>
+                    <Link href="/catalog">
+                      <h2 className="flex space-x-1 text-xs">Все товары</h2>
                     </Link>
                   </li>
-                ))}
-              </ul>
+
+                  {loadedData.map((el) => (
+                    <li
+                      key={el.id}
+                      className="p-2 border-b hover:bg-slate-50 hover-transition cursor-pointer"
+                      onClick={() => {
+                        hangleCategoryId(el.id)
+                        // setIsOpen(false)
+                      }}
+                    >
+                      <Link href='/catalog'>
+                        <h2 className={`flex space-x-1 text-xs ${selectedCategory === el.id ? 'font-bold' : ''}`}>
+                          {el.title}
+                        </h2>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
           }
 
         </div>

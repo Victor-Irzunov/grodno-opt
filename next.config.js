@@ -5,9 +5,13 @@ const nextConfig = {
 	//   domains: ['localhost'],
 	// },
 	images: {
-	  domains: ['hi3310.ru'],
-	},
- };
- 
- module.exports = nextConfig;
- 
+		remotePatterns: [
+			{
+				protocol: 'https',
+				hostname: 'hi3310.ru',
+			},
+		],
+	}
+};
+
+module.exports = nextConfig;
