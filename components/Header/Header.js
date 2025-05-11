@@ -24,8 +24,6 @@ const Header = observer(() => {
 	const searchInputRef = useRef(null);
 	//   const [categories, setCategories] = useState([]);
 
-
-
 	const categories = Array.from(new Map(products.map(item => [item.category.id, { id: item.category.id, title: item.category.title }])).values());
 
 
@@ -144,7 +142,7 @@ const Header = observer(() => {
 							<Image src='/svg/phone-black.svg' alt='Телефон' width={18} height={18} />
 							{phoneNumbers.mainPhone}
 						</a>
-					
+
 						<div className={`${pathname === '/' ? 'sd:flex xz:hidden' : 'sd:hidden xz:hidden'}`}>
 							<BtnComp title='Купить оптом' red index={358} />
 						</div>
@@ -279,6 +277,7 @@ const Header = observer(() => {
 								<Link
 									href={`${process.env.NEXT_PUBLIC_BASE_URL}/oplata/`}
 									className={`text-black`}
+									onClick={toggleMenu}
 								>
 									Оплата
 								</Link>
@@ -300,7 +299,7 @@ const Header = observer(() => {
 							<li
 								className={`text-black`}
 							>
-								<Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/garantiya/`}>
+								<Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/optovikam/`}>
 									Оптовикам
 								</Link>
 							</li>
@@ -499,8 +498,6 @@ const Header = observer(() => {
 									</div>
 								</div>
 							</div>
-
-
 						</div>
 					</div>
 
@@ -570,53 +567,96 @@ const Header = observer(() => {
 							}
 						</div>
 					</div>
-
-
 					{/* Mobile menu */}
-
 					<div className={`mobile-menu ${menuOpen2 ? 'open' : ''} z-40`}>
 						<div className='container mx-auto px-7 pt-16 h-[90vh] relative'>
-							<ul className={`text-xl font-semibold ${submenuMobilOpen ? 'hidden' : ''}`}>
-								{
-									categories && categories.length ?
-										categories.map(el => {
-											return (
-												<li
-													key={el.id}
-													className="mb-2 cursor-pointer hover:text-primary"
-													onClick={() => {
-														hangleCategoryId(el.id)
-													}}
+							<ul className="menu text-sm">
+								<li>
+									<Link
+										href="/"
+										className="text-black"
+										onClick={toggleMenu}
+									>
+										Главная
+									</Link>
+								</li>
 
-												>
-													<Link
-														onClick={toggleMenu}
-														href='/catalog'
-														className="cursor-pointer text-sm"
-													>
-														{el.title}
-													</Link>
-												</li>
-											)
-										})
-										:
-										<p className=''>
-											Загрузка категории....
-										</p>
-								}
+								<li>
+									<details open>
+										<summary className="text-black">Каталог</summary>
+										<ul>
+											{categories && categories.length ? (
+												categories.map(el => (
+													<li key={el.id}>
+														<Link
+															href="/catalog"
+															onClick={() => {
+																toggleMenu();
+																hangleCategoryId(el.id);
+															}}
+															className="hover:text-primary"
+														>
+															{el.title}
+														</Link>
+													</li>
+												))
+											) : (
+												<li><span>Загрузка категорий…</span></li>
+											)}
+										</ul>
+									</details>
+								</li>
 
+								<li>
+									<Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/oplata/`}
+										className="text-black"
+										onClick={toggleMenu}
+									>
+										Оплата
+									</Link>
+								</li>
+								<li>
+									<Link
+										href={`${process.env.NEXT_PUBLIC_BASE_URL}/garantiya/`} className="text-black"
+										onClick={toggleMenu}
+									>
+										Гарантия
+									</Link>
+								</li>
+								<li>
+									<Link
+										href={`${process.env.NEXT_PUBLIC_BASE_URL}/optovikam/`}
+										className="text-black"
+										onClick={toggleMenu}
+									>
+										Оптовикам
+									</Link>
+								</li>
+								<li>
+									<Link
+										href={`${process.env.NEXT_PUBLIC_BASE_URL}/dostavka/`}
+										className="text-black"
+										onClick={toggleMenu}
+									>
+										Доставка
+									</Link>
+								</li>
+								<li>
+									<Link
+										href={`${process.env.NEXT_PUBLIC_BASE_URL}/kontakty/`}
+										className="text-black"
+										onClick={toggleMenu}
+									>
+										Контакты
+									</Link>
+								</li>
 							</ul>
-							
 
 							<div className='absolute bottom-7 right-4 text-right'>
-								<p className='mb-1 text-xs text-gray-400 font-light'>
-									Есть вопросы?
-								</p>
-								<p className='uppercase text-gray-600 text-[9px] mb-1'>
-									Телефон магазина
-								</p>
+								<p className='mb-1 text-xs text-gray-400 font-light'>Есть вопросы?</p>
+								<p className='uppercase text-gray-600 text-[9px] mb-1'>Телефон магазина</p>
 								<div className='text-sm'>
-									<a href={`tel:${phoneNumbers.mainPhoneLink}`} className={`xz:text-[10px] sd:text-xs font-light flex`}>
+									<a href={`tel:${phoneNumbers.mainPhoneLink}`} className="xz:text-[10px] sd:text-xs font-light flex">
 										<Image src='/svg/phone-black.svg' alt='Телефон' width={18} height={18} className="mr-1" />
 										{phoneNumbers.mainPhone}
 									</a>

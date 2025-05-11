@@ -16,11 +16,9 @@ async function updateGoogleSheet(missingProducts) {
     });
 
     const sheets = google.sheets({ version: 'v4', auth });
-    const spreadsheetId = '19ZW3bldMwigzf-D1xTDM_PavpVieils_taYE1CpTpF4';
-
+    const spreadsheetId = '1gYVxktxdluIqbeu-EFoV_55xlBHpEjihsM5EVEM4HE0';
     const range = 'Лист1!A1:E999';
 
-    // Данные для добавления в таблицу
     const values = missingProducts.map((product) => [
       '',
       product.article,
@@ -29,7 +27,6 @@ async function updateGoogleSheet(missingProducts) {
       product.price,
     ]);
 
-    // Добавляем данные в таблицу
     const appendResponse = await sheets.spreadsheets.values.append({
       spreadsheetId,
       range,
@@ -39,30 +36,26 @@ async function updateGoogleSheet(missingProducts) {
       },
     });
 
-    console.log('Данные успешно добавлены в Google Таблицу');
-
-    // Получаем начальную строку, куда добавлены данные
-    const updatesRange = appendResponse.data.updates.updatedRange; // Пример: 'Лист1!A2:E6'
+    const updatesRange = appendResponse.data.updates.updatedRange;
     const startRow = parseInt(updatesRange.match(/A(\d+):/)[1], 10);
 
-    // Формируем запрос на изменение цвета ячеек
     const requests = [];
     for (let i = 0; i < missingProducts.length; i++) {
-      const rowIndex = startRow + i - 1; // Начинаем с 0
+      const rowIndex = startRow + i - 1;
       requests.push({
         repeatCell: {
           range: {
-            sheetId: 0, // ID листа (обычно первый лист = 0, можно уточнить в таблице)
+            sheetId: 0,
             startRowIndex: rowIndex,
             endRowIndex: rowIndex + 1,
             startColumnIndex: 1,
-            endColumnIndex: 5, // A-D (не включая E)
+            endColumnIndex: 5,
           },
           cell: {
             userEnteredFormat: {
-              backgroundColor: { red: 1, green: 1, blue: 0 }, // Жёлтый фон
+              backgroundColor: { red: 1, green: 1, blue: 0 },
               textFormat: {
-                foregroundColor: { red: 1, green: 0, blue: 0 }, // Красный текст
+                foregroundColor: { red: 1, green: 0, blue: 0 },
                 bold: true,
               },
             },
@@ -72,7 +65,6 @@ async function updateGoogleSheet(missingProducts) {
       });
     }
 
-    // Выполняем запрос для форматирования
     await sheets.spreadsheets.batchUpdate({
       spreadsheetId,
       requestBody: {
@@ -114,6 +106,7 @@ export async function POST(req) {
         { status: 400 }
       );
     }
+
     await prisma.priceHash.create({ data: { hash } });
 
     const [headers, ...rows] = rawProducts;
@@ -135,36 +128,45 @@ export async function POST(req) {
       include: { groups: true },
     });
 
-    const categoryMap = new Map();
-    categories.forEach((category) => {
-      category.groups.forEach((group) => {
-        categoryMap.set(`${category.title}-${group.title}`.toLowerCase(), {
-          category,
-          group,
-        });
-      });
-    });
-
     const missingProducts = [];
     const results = [];
 
     for (const product of products) {
       const { title, article, count, price } = product;
+      const lowerTitle = title.toLowerCase();
+
       let matchedCategory = null;
       let matchedGroup = null;
 
-      for (const [key, value] of categoryMap.entries()) {
-        const [categoryTitle, groupTitle] = key.split('-');
-        if (
-          title.toLowerCase().includes(categoryTitle) &&
-          title.toLowerCase().includes(groupTitle)
-        ) {
-          matchedCategory = value.category;
-          matchedGroup = value.group;
-          break;
+      // Сначала ищем точное совпадение по категории и группе
+      outer: for (const category of categories) {
+        for (const group of category.groups) {
+          if (
+            lowerTitle.includes(category.title.toLowerCase()) &&
+            lowerTitle.includes(group.title.toLowerCase())
+          ) {
+            matchedCategory = category;
+            matchedGroup = group;
+            break outer;
+          }
         }
       }
 
+      // Если точного совпадения нет — ищем совпадение только по группе
+      if (!matchedGroup) {
+        for (const category of categories) {
+          for (const group of category.groups) {
+            if (lowerTitle.includes(group.title.toLowerCase())) {
+              matchedCategory = category;
+              matchedGroup = group;
+              break;
+            }
+          }
+          if (matchedGroup) break;
+        }
+      }
+
+      // Если вообще ничего не нашли
       if (!matchedCategory || !matchedGroup) {
         missingProducts.push(product);
         continue;
@@ -173,7 +175,7 @@ export async function POST(req) {
       let priceInUSD;
       switch (currency) {
         case 'RUB':
-          priceInUSD = parseFloat((price * exchangeRate / 100).toFixed(3));  // Округляем до 3 знаков и преобразуем в число
+          priceInUSD = parseFloat((price * exchangeRate / 100).toFixed(3));
           break;
         case 'CNY':
           priceInUSD = parseFloat((price * exchangeRate / 10).toFixed(3));
@@ -187,6 +189,7 @@ export async function POST(req) {
             { status: 400 }
           );
       }
+
       const existingProduct = await prisma.product.findUnique({ where: { article } });
 
       if (existingProduct) {
@@ -233,7 +236,3 @@ export async function POST(req) {
     return NextResponse.json({ message: 'Ошибка сервера' }, { status: 500 });
   }
 }
-
-
-
-

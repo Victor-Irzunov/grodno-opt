@@ -4,6 +4,7 @@ import { Button, Modal, Form, InputNumber, message } from "antd"
 
 const UserDataAdmin = () => {
   const [data, setData] = useState([])
+  console.log("🚀 🚀 🚀  _ UserDataAdmin _ data:", data)
   const [editingUser, setEditingUser] = useState(null)
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [form] = Form.useForm()
@@ -74,6 +75,7 @@ const UserDataAdmin = () => {
           <p><strong>Имя:</strong> {user.userData?.fullName}</p>
           <p><strong>Телефон:</strong> {user.userData?.phone}</p>
           <p><strong>Email:</strong> {user.email}</p>
+          <p><strong>Адрес:</strong> {user.userData?.address}</p>
           <p><strong>Дата регистрации:</strong> {new Date(user.createdAt).toLocaleString()}</p>
           {user.wholesaleBuyer && (
             <div className="mb-2">

@@ -11,7 +11,7 @@ export async function GET(req) {
     });
 
     const sheets = google.sheets({ version: 'v4', auth });
-    const spreadsheetId = '19ZW3bldMwigzf-D1xTDM_PavpVieils_taYE1CpTpF4';
+    const spreadsheetId = '1gYVxktxdluIqbeu-EFoV_55xlBHpEjihsM5EVEM4HE0';
     const range = 'Лист1!A1:E999';
 
     const response = await sheets.spreadsheets.values.get({

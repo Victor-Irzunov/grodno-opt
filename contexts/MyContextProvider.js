@@ -21,7 +21,7 @@ const MyContextProvider = ({ children }) => {
   const updateIsState = () => {
     setIsState(i => !i);
   };
-  
+
   useEffect(() => {
     dataUser()
       .then(data => {
@@ -40,9 +40,9 @@ const MyContextProvider = ({ children }) => {
     dollarExchangeRate()
       .then(data => {
         dataApp.setOfficialRate(data.data.Cur_OfficialRate)
-    })
+      })
   }, [])
-  
+
   const handleCurrencyChange = (currency) => {
     dataApp.setCurrency(currency);
   };
@@ -65,12 +65,13 @@ const MyContextProvider = ({ children }) => {
   useEffect(() => {
     getAllProducs()
       .then(data => {
-      if (data) {
-        setProducts(data.serializedProducts)
-     }
-    })
-  },[])
-     
+        if (data) {
+          setProducts(data.serializedProducts)
+        }
+      })
+  }, [])
+
+
 
   return (
     <MyContext.Provider value={{ state, products, updateIsState, isState, updateState, user, dataApp, handleCurrencyChange }}>

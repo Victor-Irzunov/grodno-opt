@@ -117,14 +117,14 @@ const FormOrder = ({ selectedProduct, closeModal, setIsFormSubmitted, title, btn
 
 				<div className="form-control xz:w-full sd:w-auto">
 					<label className={`label ${no ? 'hidden' : 'flex'}`}>
-						<span className="label-text">Телефон</span>
-						<span className="label-text-alt">Обязательное поле</span>
+						<span className="label-text text-[11px]">Телефон</span>
+						<span className="label-text-alt text-[9px]">Обязательное поле</span>
 					</label>
 					<InputMask
 						placeholder="+375 29 123-45-67"
 						mask="+3\7\5 99 999 99 99"
 						maskChar={'-'}
-						className={`input input-bordered ${alertActive ? 'input-error' : ''} input-lg bg-white`}
+						className={`input input-bordered ${alertActive ? 'input-error' : ''} bg-white placeholder:text-[12px]`}
 						beforeMaskedValueChange={beforeMaskedValueChange}
 						value={tel}
 						onChange={handlePhoneChange}
@@ -139,15 +139,15 @@ const FormOrder = ({ selectedProduct, closeModal, setIsFormSubmitted, title, btn
 				{/* Поле Email */}
 				<div className="form-control mt-3">
 					<label className="label">
-						<span className="label-text">Email</span>
-						<span className="label-text-alt">Обязательное поле</span>
+						<span className="label-text text-[11px]">Email</span>
+						<span className="label-text-alt text-[9px]">Обязательное поле</span>
 					</label>
 					<input
 						type="email"
 						name="email"
 						value={formData.email}
 						onChange={handleChange}
-						className={`input input-bordered bg-white ${alertActive3 ? 'input-error' : ''}`}
+						className={`input input-bordered bg-white ${alertActive3 ? 'input-error' : ''} placeholder:text-[12px]`}
 						placeholder="Введите ваш email"
 					/>
 					{alertActive3 && <div className="label-text-alt text-red-300 mt-2">{alertText3}</div>}
@@ -156,15 +156,15 @@ const FormOrder = ({ selectedProduct, closeModal, setIsFormSubmitted, title, btn
 				{/* Поле Адрес */}
 				<div className="form-control mt-3">
 					<label className="label">
-						<span className="label-text">Адрес мастерской</span>
-						<span className="label-text-alt">Обязательное поле</span>
+						<span className="label-text text-[11px]">Адрес мастерской</span>
+						<span className="label-text-alt text-[9px]">Обязательное поле</span>
 					</label>
 					<input
 						type="text"
 						name="address"
 						value={formData.address}
 						onChange={handleChange}
-						className="input input-bordered bg-white"
+						className="input input-bordered bg-white placeholder:text-[12px]"
 						placeholder="Введите ваш адрес"
 					/>
 				</div>
@@ -174,33 +174,31 @@ const FormOrder = ({ selectedProduct, closeModal, setIsFormSubmitted, title, btn
 				{/* Поле Название мастерской */}
 				<div className="form-control mt-3">
 					<label className="label">
-						<span className="label-text">Название мастерской</span>
-						<span className="label-text-alt">Необязательное поле</span>
+						<span className="label-text text-[11px]">Название мастерской</span>
+						<span className="label-text-alt text-[9px]">Необязательное поле</span>
 					</label>
 					<input
 						type="text"
 						name="workshop"
 						value={formData.workshop}
 						onChange={handleChange}
-						className="input input-bordered bg-white"
+						className="input input-bordered bg-white placeholder:text-[12px]"
 						placeholder="Введите название мастерской"
 					/>
 				</div>
-
-
 				{
 					!no
 						?
 						<div className="form-control mt-3">
 							<label className="label">
-								<span className="label-text">Сообщение</span>
-								<span className="label-text-alt">Необязательное поле</span>
+								<span className="label-text text-[11px]">Сообщение</span>
+								<span className="label-text-alt text-[9px]">Необязательное поле</span>
 							</label>
 							<textarea
 								name="message"
 								value={formData.message}
 								onChange={handleChange}
-								className="textarea textarea-bordered xz:textarea-sm sd:textarea-lg bg-white"
+								className="textarea textarea-bordered xz:textarea-sm sd:textarea-lg bg-white placeholder:text-[12px]"
 								placeholder="Ваше сообщение"
 							></textarea>
 						</div>
