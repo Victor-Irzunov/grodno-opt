@@ -1,13 +1,13 @@
 import { getAllUsers } from "@/http/userAPI"
 import { useEffect, useState } from "react"
-import { Button, Modal, Form, InputNumber, message } from "antd"
+import Image from "next/image"
+import { Button, message } from "antd"
+import EditUserDataAdminForm from "../FormsAdmin/EditUserDataAdminForm"
 
 const UserDataAdmin = () => {
   const [data, setData] = useState([])
-  console.log("🚀 🚀 🚀  _ UserDataAdmin _ data:", data)
-  const [editingUser, setEditingUser] = useState(null)
-  const [isModalVisible, setIsModalVisible] = useState(false)
-  const [form] = Form.useForm()
+  const [editUserId, setEditUserId] = useState(null)
+  const [openUserId, setOpenUserId] = useState(null) // кто открыт на просмотр
 
   const fetchUsers = async () => {
     try {
@@ -27,95 +27,109 @@ const UserDataAdmin = () => {
     fetchUsers()
   }, [])
 
-  const showEditModal = (user) => {
-    setEditingUser(user)
-    form.setFieldsValue({
-      discount: user.wholesaleBuyer?.discount || 0,
-      limit: user.wholesaleBuyer?.limit || 0,
-    })
-    setIsModalVisible(true)
-  }
-
-  const handleOk = async () => {
-    try {
-      const values = await form.validateFields()
-      const res = await fetch("/api/user/update-limit-discount", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: editingUser.id,
-          ...values,
-        }),
-      })
-
-      const result = await res.json()
-      if (res.ok) {
-        message.success("Успешно обновлено")
-        setIsModalVisible(false)
-        fetchUsers() // Обновляем данные
-      } else {
-        message.error(result.message || "Ошибка при обновлении")
-      }
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
-  const handleCancel = () => {
-    setIsModalVisible(false)
+  const handleFormSuccess = () => {
+    setEditUserId(null)
+    fetchUsers()
   }
 
   return (
-    <div className="pt-10 px-12 text-white pb-28">
-      <p className="text-3xl mb-16">Данные клиента</p>
+    <div className="p-6 text-white">
+      <h2 className="text-2xl mb-6">Просмотр должников</h2>
 
-      {data.map((user) => (
-        <div key={user.id} className="mb-8 border-b border-gray-700 pb-4">
-          <p><strong>ID:</strong> {user.id}</p>
-          <p><strong>Имя:</strong> {user.userData?.fullName}</p>
-          <p><strong>Телефон:</strong> {user.userData?.phone}</p>
-          <p><strong>Email:</strong> {user.email}</p>
-          <p><strong>Адрес:</strong> {user.userData?.address}</p>
-          <p><strong>Дата регистрации:</strong> {new Date(user.createdAt).toLocaleString()}</p>
-          {user.wholesaleBuyer && (
-            <div className="mb-2">
-              <p><strong>Баланс:</strong> {user.wholesaleBuyer.balance}</p>
-              <p><strong>Долг:</strong> {user.wholesaleBuyer.debt}</p>
-              <p><strong>Скидка:</strong> {user.wholesaleBuyer.discount}%</p>
-              <p><strong>Лимит:</strong> {user.wholesaleBuyer.limit}$</p>
+      {data.map((user) => {
+        const fullName =
+          user.userData?.fullName?.trim() ||
+          user.email?.trim() ||
+          "Без имени"
+
+        const rawDebt = parseFloat(user.wholesaleBuyer?.debt || 0)
+        const debt = rawDebt > 0 ? `-${rawDebt.toFixed(2)} $` : "0.00 $"
+        const isEditing = editUserId === user.id
+        const isOpen = openUserId === user.id
+
+        const initialFormData = {
+          fullName: user.userData?.fullName || "",
+          address: user.userData?.address || "",
+          phone: user.userData?.phone || "",
+          email: user.email,
+          password: "",
+          discount: parseFloat(user.wholesaleBuyer?.discount || 0),
+          limit: parseFloat(user.wholesaleBuyer?.limit || 0),
+        }
+
+        return (
+          <div
+            key={user.id}
+            className="bg-gray-800 py-3 px-8 rounded mb-3"
+          >
+            <div className="flex justify-between items-center">
+              <div className='flex space-x-2 items-center'>
+                <p className="text-base font-bold">{fullName}</p>
+                <span className="text-xs text-gray-400">id: {user.id}</span>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <p className={`text-sm ${rawDebt > 0 ? "text-red-400" : "text-green-400"}`}>
+                  {debt}
+                </p>
+
+                <Image
+                  src="/svg/user-see.svg"
+                  alt="Смотреть"
+                  width={20}
+                  height={20}
+                  className="cursor-pointer"
+                  onClick={() =>
+                    setOpenUserId(openUserId === user.id ? null : user.id)
+                  }
+                />
+
+                <Image
+                  src="/svg/customization.svg"
+                  alt="Редактировать"
+                  width={20}
+                  height={20}
+                  className="cursor-pointer"
+                  onClick={() => setEditUserId(user.id)}
+                />
+              </div>
             </div>
-          )}
-          <Button onClick={() => showEditModal(user)} type="primary">
-            Редактировать
-          </Button>
-        </div>
-      ))}
 
-      <Modal
-        title="Редактировать скидку и лимит"
-        open={isModalVisible}
-        onOk={handleOk}
-        onCancel={handleCancel}
-        okText="Сохранить"
-        cancelText="Отмена"
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item
-            name="discount"
-            label="Скидка (%)"
-            rules={[{ required: true, message: "Введите скидку" }]}
-          >
-            <InputNumber min={0} max={100} step={0.01} style={{ width: "100%" }} />
-          </Form.Item>
-          <Form.Item
-            name="limit"
-            label="Лимит ($)"
-            rules={[{ required: true, message: "Введите лимит" }]}
-          >
-            <InputNumber min={0} step={0.01} style={{ width: "100%" }} />
-          </Form.Item>
-        </Form>
-      </Modal>
+            {isOpen && (
+              <div className="text-sm text-white mt-5 space-y-2">
+                <p><strong>Телефон:</strong> {user.userData?.phone}</p>
+                <p><strong>Email:</strong> {user.email}</p>
+                <p><strong>Адрес:</strong> {user.userData?.address}</p>
+                <p><strong>Баланс:</strong> {user.wholesaleBuyer?.balance}</p>
+                <p className={`text-sm ${rawDebt > 0 ? "text-red-400" : "text-green-400"}`}><strong>Задолженность:</strong> {debt}</p>
+                <p><strong>Скидка:</strong> {user.wholesaleBuyer?.discount}%</p>
+                <p><strong>Лимит:</strong> {user.wholesaleBuyer?.limit}$</p>
+                <p><strong>Дата регистрации:</strong> {new Date(user.createdAt).toLocaleString()}</p>
+              </div>
+            )}
+
+            {isEditing && (
+              <div className="mt-6 bg-[#1a1a1a] p-4 rounded">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-lg font-bold">Редактирование клиента</h3>
+                  <Button
+                    size="small"
+                    danger
+                    style={{ backgroundColor: '#191919' }}
+                    onClick={() => setEditUserId(null)}
+                  >
+                    Скрыть форму
+                  </Button>
+                </div>
+                <EditUserDataAdminForm
+                  data={initialFormData}
+                  onSuccess={handleFormSuccess}
+                />
+              </div>
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }

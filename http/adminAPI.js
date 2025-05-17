@@ -96,6 +96,13 @@ export const editDiscountGroup = async (obj) => {
 	return data
 }
 
+export const editUserDataAdmin = async ({ email, password, phone, fullName, discount, limit, address, isAdmin }) => {
+    const { data } = await $host.post('/api/admin/user', {
+        email, password, phone, fullName, discount, limit, address, isAdmin: false
+    });
+    return data
+};
+
 
 export const getAllProducs = async () => {
 	try {

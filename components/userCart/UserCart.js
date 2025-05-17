@@ -64,6 +64,13 @@ function UserCart({ data, setData }) {
     const handleIncrement = (productId) => {
         try {
             const cartData = JSON.parse(localStorage.getItem("parts")) || [];
+            const productInCart = cartData.find((item) => item.id === productId);
+            const productFullData = data.find((product) => product.id === productId);
+
+            if (productInCart.quantity >= productFullData.count) {
+                return; // Не увеличивать, если достигли лимита
+            }
+
             const updatedCartData = cartData.map((item) =>
                 item.id === productId ? { ...item, quantity: item.quantity + 1 } : item
             );
@@ -77,6 +84,7 @@ function UserCart({ data, setData }) {
             console.error("Error incrementing product quantity:", error);
         }
     };
+
     const totalAmount = data.reduce((acc, product) => {
         return acc + (product.price * product.quantity)
     }, 0);
@@ -128,7 +136,7 @@ function UserCart({ data, setData }) {
                     </div>
                 </div>
                 <div className="sd:w-[20rem] xz:w-full flex flex-col gap-6">
-                    
+
                     <div className="rounded-lg border border-gray-300 p-4 bg-white text-gray-600 flex flex-col gap-1">
                         <div className="flex items-center justify-between">
                             <span>Сумма покупки:</span>

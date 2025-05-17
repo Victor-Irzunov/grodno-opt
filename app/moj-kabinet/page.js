@@ -11,7 +11,7 @@ import Image from 'next/image'
 import { useContext, useEffect, useState } from 'react';
 import { useRouter } from "next/navigation";
 import { getFullUserData } from '@/http/userAPI';
-import Link from 'next/link';
+
 
 const Page = observer(() => {
 	const [searchQuery, setSearchQuery] = useState("");
@@ -24,7 +24,7 @@ const Page = observer(() => {
 	useEffect(() => {
 		getFullUserData()
 			.then(data => {
-				console.log("🚀 🚀 🚀  _ useEffect _ data:", data)
+				console.log("🚀 🚀 🚀  _мой кабинет useEffect _ data:", data)
 				if (data) {
 					setData(data);
 				}

@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 
 const prisma = new PrismaClient();
 
+
 export async function POST(req) {
   try {
     const body = await req.json();
@@ -104,16 +105,27 @@ export async function POST(req) {
         },
       });
 
-      // Уменьшаем остаток по каждому товару
+      // Уменьшаем остаток по каждому товару без ухода в минус
       for (const item of data) {
-        await tx.product.update({
+        const product = await tx.product.findUnique({
           where: { id: item.id },
-          data: {
-            count: {
-              decrement: item.quantity,
-            },
-          },
+          select: { count: true },
         });
+
+        const decrementQuantity = Math.min(item.quantity, product.count);
+
+        if (decrementQuantity > 0) {
+          await tx.product.update({
+            where: { id: item.id },
+            data: {
+              count: {
+                decrement: decrementQuantity,
+              },
+            },
+          });
+        } else {
+          console.warn(`⚠️ Попытка уменьшить товар (id: ${item.id}) при нулевом остатке`);
+        }
       }
 
       return order;
@@ -125,6 +137,7 @@ export async function POST(req) {
     return NextResponse.json({ message: 'Ошибка сервера' }, { status: 500 });
   }
 }
+
 
 
 export async function GET(req) {

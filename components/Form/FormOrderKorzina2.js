@@ -1,13 +1,14 @@
 "use client";
 import { sendOrderTelegram } from '@/http/telegramAPI';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import PhoneInput from './MaskPhone/PhoneInput';
 import { makingAnOrder } from '@/http/userAPI';
 import { message } from 'antd';
+import { MyContext } from '@/contexts/MyContextProvider';
 
 const FormOrderKorzina2 = ({ selectedProduct, closeModal, setIsFormSubmitted, title, btn, no, user, data, setData }) => {
   console.log("🚀 🚀 🚀  _ FormOrderKorzina2 _ data:", data);
-
+  const { dataApp } = useContext(MyContext);
   const [tel, setTel] = useState('+375 ');
   const [message1, setMessage1] = useState('');
   const [alertActive, setAlertActive] = useState(false);
@@ -76,6 +77,7 @@ const FormOrderKorzina2 = ({ selectedProduct, closeModal, setIsFormSubmitted, ti
       sendOrderTelegram(messageForm);
 
       localStorage.removeItem('parts');
+      dataApp.setDataKorzina([]);
       setTel('+375 ');
       setMessage1('');
       setAddress('');

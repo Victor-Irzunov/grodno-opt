@@ -36,7 +36,7 @@ export const AsideMenu = ({ data, setSelectedCategory, flex, selectedCategory, b
         <div className="mt-4">
           {
             flex ?
-              <ul className="border text-sm text-gray-800">
+              <ul className="border text-sm text-gray-800 max-h-[900px] overflow-y-auto">
                 <li
                   className={`p-2 border-b hover:bg-slate-50 hover-transition cursor-pointer ${selectedCategory === null ? 'font-bold' : ''}`}
                   onClick={() => handleCategoryClick(null)}
@@ -46,7 +46,7 @@ export const AsideMenu = ({ data, setSelectedCategory, flex, selectedCategory, b
                 {loadedData.map((el) => (
                   <li
                     key={el.id}
-                    className="p-2 border-b hover:bg-slate-50 hover-transition cursor-pointer"
+                    className="p-1.5 text-xs border-b hover:bg-slate-50 hover-transition cursor-pointer"
                     onClick={() => handleCategoryClick(el.id)}
                   >
                     <h2 className={`flex space-x-1 ${selectedCategory === el.id ? 'font-bold' : ''}`}>{el.title}</h2>

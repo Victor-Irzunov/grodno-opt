@@ -1,8 +1,6 @@
 import Link from "next/link"
-import IstoriyaZakazov from "./IstoriyaZakazov"
 
 const TekushchieZakazy = ({ data, setActiveComponent }) => {
-	// фильтруем только текущие заказы
 	const orders = data?.wholesaleBuyer?.orders?.filter(order => order.status !== 'completed') || []
 
 	return (
@@ -21,7 +19,7 @@ const TekushchieZakazy = ({ data, setActiveComponent }) => {
 							</div>
 							<p className="text-sm mb-1">Статус: <span className="font-semibold">{order.status}</span></p>
 							<p className="text-sm mb-1">Доставка: <span className="font-semibold">{order.deliveryStatus}</span></p>
-							<p className="text-sm mb-1">Сумма: <span className="font-semibold">{order.totalAmount} BYN</span></p>
+
 
 							{order.shippingInfo && (
 								<p className="text-sm mb-1">
@@ -29,15 +27,38 @@ const TekushchieZakazy = ({ data, setActiveComponent }) => {
 								</p>
 							)}
 
-							<div className="mt-2">
-								<p className="text-sm font-semibold mb-1">Товары:</p>
-								<ul className="list-disc pl-5 text-sm">
-									{order.orderItems.map(item => (
-										<li key={item.id}>
-											{item.product.title} — {item.quantity} шт.
-										</li>
-									))}
-								</ul>
+							<div className="mt-4 overflow-x-auto">
+								<p className="text-sm font-semibold mb-2">Товары:</p>
+								<table className="min-w-full text-sm border border-gray-300">
+									<thead>
+										<tr className="bg-gray-100 text-left sd:text-sm xz:text-[10px]">
+											<th className="p-2 border border-gray-300">№</th>
+											<th className="p-2 border border-gray-300">Название</th>
+											<th className="p-2 border border-gray-300">Кол-во</th>
+											<th className="p-2 border border-gray-300">Цена за шт.</th>
+											<th className="p-2 border border-gray-300">Сумма</th>
+										</tr>
+									</thead>
+									<tbody>
+										{order.orderItems.map((item, index) => {
+											const price = parseFloat(item.price)
+											const quantity = item.quantity
+											const total = (price * quantity).toFixed(2)
+
+											return (
+												<tr key={item.id} className="border-t border-gray-300 sd:text-base xz:text-[10px]">
+													<td className="p-2 border border-gray-300">{index + 1}</td>
+													<td className="p-2 border border-gray-300">{item.product.title}</td>
+													<td className="p-2 border border-gray-300">{quantity}</td>
+													<td className="p-2 border border-gray-300">{price} $</td>
+													<td className="p-2 border border-gray-300">{total} $</td>
+												</tr>
+											)
+										})}
+									</tbody>
+								</table>
+
+								<p className="text-sm mb-1 mt-8 font-bold">Итого: <span className="font-semibold">{order.totalAmount} $</span></p>
 							</div>
 						</div>
 					))}
@@ -58,7 +79,6 @@ const TekushchieZakazy = ({ data, setActiveComponent }) => {
 					</div>
 				</>
 			)}
-
 		</div>
 	)
 }

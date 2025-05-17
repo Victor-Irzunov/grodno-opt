@@ -5,8 +5,8 @@ export const registration = async ({ email, password, phone, fullName, discount,
     const { data } = await $host.post('/api/user/register', {
         email, password, phone, fullName, discount, limit, address, isAdmin: false
     });
-    localStorage.setItem('token_grodno', data.token);
-    return jwtDecode(data.token);
+    // localStorage.setItem('token_grodno', data.token);
+    return data
 };
 
 
@@ -51,6 +51,11 @@ export const dataUser = async () => {
         return null
     }
 }
+
+
+
+
+
 export const getFullUserData = async () => {
     const token = localStorage.getItem('token_grodno')
     if (token) {

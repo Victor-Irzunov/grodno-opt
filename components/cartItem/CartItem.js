@@ -2,6 +2,7 @@ import Link from "next/link";
 import { RiAddFill, RiSubtractFill } from "react-icons/ri";
 
 function CartItem({ product, onDelete, onDecrement, onIncrement }) {
+    console.log("🚀 🚀 🚀  _ CartItem _ product:", product)
     if (!product) {
         return null;
     }

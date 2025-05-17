@@ -7,20 +7,20 @@ import { MyContext } from '@/contexts/MyContextProvider'
 import { observer } from 'mobx-react-lite'
 import Link from 'next/link'
 import Image from 'next/image'
-import { RiAddFill, RiSubtractFill } from "react-icons/ri";
+import { RiAddFill, RiSubtractFill } from "react-icons/ri"
 import { message, Tabs } from 'antd'
 import { tabsContent } from '@/constans/Tabs'
 import phoneNumbers from '@/config/config'
-import { transliterate } from "@/transliterate/transliterate";
+import { transliterate } from "@/transliterate/transliterate"
 
 const OneProductPage = observer(({ categories, data, dataAllProduct }) => {
-	const { user, dataApp, handleCurrencyChange, updateIsState } = useContext(MyContext);
+	const { user, dataApp, handleCurrencyChange, updateIsState } = useContext(MyContext)
 
-	const inputRef = useRef(null);
-	const [searchQuery, setSearchQuery] = useState("");
-	const [searchResults, setSearchResults] = useState(null);
-	const [filteredData, setFilteredData] = useState(dataAllProduct || []);
-	const [quantities, setQuantities] = useState({});
+	const inputRef = useRef(null)
+	const [searchQuery, setSearchQuery] = useState("")
+	const [searchResults, setSearchResults] = useState(null)
+	const [filteredData, setFilteredData] = useState(dataAllProduct || [])
+	const [quantities, setQuantities] = useState({})
 
 	useEffect(() => {
 		if (searchQuery) {
@@ -28,35 +28,45 @@ const OneProductPage = observer(({ categories, data, dataAllProduct }) => {
 				setSearchResults(filteredData.filter(item =>
 					item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
 					item.article.toLowerCase().includes(searchQuery.toLowerCase())
-				));
+				))
 			} else {
-				setSearchResults([]);
+				setSearchResults([])
 			}
 		} else {
-			setSearchResults(null);
+			setSearchResults(null)
 		}
-	}, [searchQuery, filteredData]);
-
+	}, [searchQuery, filteredData])
 
 	const handleAddToCart = (item) => {
-		const cart = JSON.parse(localStorage.getItem("parts")) || [];
-		const existingItemIndex = cart.findIndex(cartItem => cartItem.id === item.id);
-		if (existingItemIndex !== -1) {
-			cart[existingItemIndex].quantity += quantities[item.id] || 1;
-		} else {
-			cart.push({ ...item, quantity: quantities[item.id] || 1 });
+		const quantityToAdd = quantities[item.id] || 1
+		if (item.count && quantityToAdd > item.count) {
+			message.error("Нельзя добавить больше, чем есть в наличии")
+			return
 		}
-		localStorage.setItem("parts", JSON.stringify(cart));
+
+		const cart = JSON.parse(localStorage.getItem("parts")) || []
+		const existingItemIndex = cart.findIndex(cartItem => cartItem.id === item.id)
+		if (existingItemIndex !== -1) {
+			const newQuantity = cart[existingItemIndex].quantity + quantityToAdd
+			if (item.count && newQuantity > item.count) {
+				message.error("Нельзя добавить больше, чем есть в наличии")
+				return
+			}
+			cart[existingItemIndex].quantity = newQuantity
+		} else {
+			cart.push({ ...item, quantity: quantityToAdd })
+		}
+		localStorage.setItem("parts", JSON.stringify(cart))
 		updateIsState()
-		message.success("Товар добавлен в корзину");
-	};
+		message.success("Товар добавлен в корзину")
+	}
 
 	const convertPrice = (price) => {
 		if (dataApp.currency === 'BYN') {
-			return (price * dataApp.OfficialRate).toFixed(2);
+			return (price * dataApp.OfficialRate).toFixed(2)
 		}
-		return price;
-	};
+		return price
+	}
 
 	const linkTransliterate = (title) => {
 		return transliterate(title)
@@ -66,8 +76,25 @@ const OneProductPage = observer(({ categories, data, dataAllProduct }) => {
 			.replace(/\(\s*(.*?)\s*\)/g, "-$1")
 			.replace(/-+/g, "-")
 			.replace(/\s?-\s?/g, "-")
-			.toLowerCase();
-	};
+			.toLowerCase()
+	}
+
+	const handleQuantityChange = (productId, delta, maxCount) => {
+		setQuantities(prevQuantities => {
+			const currentQuantity = prevQuantities[productId] || 1
+			let newQuantity = currentQuantity + delta
+			newQuantity = Math.max(1, newQuantity)
+			if (maxCount && newQuantity > maxCount) {
+				newQuantity = maxCount
+			}
+			return {
+				...prevQuantities,
+				[productId]: newQuantity
+			}
+		})
+	}
+
+	const isOutOfStock = (count) => count === 0
 
 
 	return (
@@ -96,79 +123,70 @@ const OneProductPage = observer(({ categories, data, dataAllProduct }) => {
 														<Link href={`/catalog/${linkTransliterate(el.category.title)}/${linkTransliterate(el.title)}/${linkTransliterate(el.article)}/`}>
 															<h3>{el.title} ({el.article})</h3>
 														</Link>
-														<div className='flex items-center text-green-500 mt-1'>
-															<div className="w-1 h-1 rounded-full bg-green-500" />
-															<p className='ml-1 text-xs'>
-																В наличии
+														<div className='flex items-center mt-1'>
+															<div className={`w-1 h-1 rounded-full ${el.count > 0 ? "bg-green-500" : "bg-red-500"}`} />
+															<p className={`ml-1 text-xs ${el.count > 0 ? "text-green-500" : "text-red-500"}`}>
+																{el.count > 0 ? "В наличии" : "Нет в наличии"}
 															</p>
-															{typeof el.images === "string" && el.images !== "[]" && el.images !== "[]".toString() ? (
+															{typeof el.images === "string" && el.images !== "[]" ? (
 																<div className='ml-6 cursor-pointer' onClick={() => handleImageClick(el.images)}>
 																	<Image src='/svg/images.svg' alt='Изображение' width={20} height={20} />
 																</div>
 															) : null}
 														</div>
 													</div>
-													{
-														user?.isAuth ?
-															<div className='flex items-center justify-end space-x-3 sd:w-5/12 xz:w-full'>
-																<p className='font-semibold text-base mr-2'>
-																	{dataApp.currency === 'USD' ? `$${el.price}` : `${convertPrice(el.price)} BYN`}
-																</p>
-																<div className="join rounded-sm">
-																	<button
-																		className="join-item btn btn-sm px-2 border border-gray-300"
-																		onClick={() => handleQuantityChange(el.id, -1)}
-																	>
-																		<RiSubtractFill fontSize={20} />
-																	</button>
-																	<button
-																		className="btn btn-sm px-4 join-item pointer-events-none bg-white border border-gray-300"
-																	>
-																		{quantities[el.id] || 1}
-																	</button>
-																	<button
-																		className="join-item btn btn-sm px-2 border border-gray-300"
-																		onClick={() => handleQuantityChange(el.id, 1)}
-																	>
-																		<RiAddFill fontSize={20} />
-																	</button>
-																</div>
 
-																{
-																	dataApp.dataKorzina.some(item => item.id === el.id)
-																		?
-
-																		<Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/korzina`}>
-																			<button
-																				className="btn btn-success btn-sm rounded-sm font-light text-white"
-																			>
-																				В корзине
-																			</button>
-																		</Link>
-																		:
-																		<button
-																			className="btn btn-primary btn-sm rounded-sm font-light text-white"
-																			onClick={() => handleAddToCart(el)}
-																		>
-																			В корзину
-																		</button>
-																}
+													{user?.isAuth ? (
+														<div className='flex items-center justify-end space-x-3 sd:w-5/12 xz:w-full'>
+															<p className={`font-semibold text-base mr-2 ${Number(el.count) > 0  ? "block" : "hidden"}`}>
+																{dataApp.currency === 'USD' ? `$${el.price}` : `${convertPrice(el.price)} BYN`}
+															</p>
+															<div className="join rounded-sm">
+																<button
+																	className="join-item btn btn-sm px-2 border border-gray-300"
+																	onClick={() => handleQuantityChange(el.id, -1, el.count)}
+																	disabled={(quantities[el.id] || 1) <= 1}
+																>
+																	<RiSubtractFill fontSize={20} />
+																</button>
+																<button className="btn btn-sm px-4 join-item pointer-events-none bg-white border border-gray-300">
+																	{quantities[el.id] || 1}
+																</button>
+																<button
+																	className="join-item btn btn-sm px-2 border border-gray-300"
+																	onClick={() => handleQuantityChange(el.id, 1, el.count)}
+																	disabled={(quantities[el.id] || 1) >= el.count}
+																>
+																	<RiAddFill fontSize={20} />
+																</button>
 															</div>
-															:
-															null
-													}
+
+															{dataApp.dataKorzina.some(item => item.id === el.id) ? (
+																<Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/korzina`}>
+																	<button className="btn btn-success btn-sm rounded-sm font-light text-white">
+																		В корзине
+																	</button>
+																</Link>
+															) : (
+																<button
+																	className="btn btn-primary btn-sm rounded-sm font-light text-white"
+																	onClick={() => handleAddToCart(el)}
+																>
+																	В корзину
+																</button>
+															)}
+														</div>
+													) : null}
 												</div>
 											</li>
 										))
 										:
 										<div className='text-center text-gray-300 text-xl pt-7'>
-											<p className='font-bold'>
-												ничего не найдено
-											</p>
+											<p className='font-bold'>ничего не найдено</p>
 											<p className='text-sm mt-4'>
 												Если вы не нашли то, что искали, позвоните нам — мы обязательно вам поможем!
 											</p>
-											<a href={`tel:${phoneNumbers.mainPhoneLink}`} className={`font-semibold text-base`}>
+											<a href={`tel:${phoneNumbers.mainPhoneLink}`} className='font-semibold text-base'>
 												{phoneNumbers.mainPhone}
 											</a>
 										</div>
@@ -184,6 +202,7 @@ const OneProductPage = observer(({ categories, data, dataAllProduct }) => {
 											id: {data.id}
 										</p>
 										<GalleryComponent images={typeof data.images === 'string' ? JSON.parse(data.images) : []} title={data.title} />
+
 										<article className='sd:hidden xz:block bg-slate-50 sd:py-8 xz:py-5 sd:px-6 xz:px-2'>
 											<div className=''>
 												<div className='mb-4'>
@@ -191,30 +210,32 @@ const OneProductPage = observer(({ categories, data, dataAllProduct }) => {
 														Артикул: <span className='font-semibold'>{data.article}</span>
 													</h2>
 												</div>
-												<div className=''>
-													{
-														user?.isAuth ?
-															<p className='text-4xl font-semibold text-gray-800'>
-																{dataApp.currency === 'USD' ? `$${data.price} ` : `${convertPrice(data.price)} BYN`}
-															</p>
-															:
-															<Link href='/login' className='flex underline text-sm text-gray-700'>
-																Узнать цену <Image src='/svg/arrow-right.svg' className='-rotate-45 ml-2' alt='Переход для регистрации' width={15} height={15} />
-															</Link>
-													}
 
-													<div className={`flex items-center ${data.status === 'В наличии' ? 'text-green-500' : 'text-orange-500'} mt-3`}>
-														<div className={`w-1 h-1 rounded-full ${data.status === 'В наличии' ? 'bg-green-500' : 'bg-orange-500'} bg-green-500`} />
-														<p className='ml-1 text-xs'>
-															{data.status}
-														</p>
-													</div>
+												{user?.isAuth ? (
+													<p className={`text-4xl font-semibold text-gray-800 ${Number(data.count) > 0  ? "block" : "hidden"}`}>
+														{dataApp.currency === 'USD' ? `$${data.price}` : `${convertPrice(data.price)} BYN`}
+													</p>
+												) : (
+													<Link href='/login' className='flex underline text-sm text-gray-700'>
+														Узнать цену <Image src='/svg/arrow-right.svg' className='-rotate-45 ml-2' alt='Переход для регистрации' width={15} height={15} />
+													</Link>
+												)}
 
+
+												<div className={`flex items-center ${data.count > 0 ? 'text-green-500' : 'text-red-500'} mt-3`}>
+													<div className={`w-1 h-1 rounded-full ${data.count > 0 ? 'bg-green-500' : 'bg-red-500'}`} />
+													<p className='ml-1 text-xs'>
+														{data.count > 0 ? 'В наличии' : 'Нет в наличии'}
+													</p>
+												</div>
+
+												{user?.isAuth && data.count > 0 && (
 													<div className='flex space-x-2 mt-8'>
 														<div className="join rounded-sm">
 															<button
 																className="join-item btn btn-sm px-2 border border-gray-300"
-																onClick={() => handleQuantityChange(data.id, -1)}
+																onClick={() => handleQuantityChange(data.id, -1, data.count)}
+																disabled={(quantities[data.id] || 1) <= 1}
 															>
 																<RiSubtractFill fontSize={20} />
 															</button>
@@ -225,56 +246,51 @@ const OneProductPage = observer(({ categories, data, dataAllProduct }) => {
 															</button>
 															<button
 																className="join-item btn btn-sm px-2 border border-gray-300"
-																onClick={() => handleQuantityChange(data.id, 1)}
+																onClick={() => handleQuantityChange(data.id, 1, data.count)}
+																disabled={(quantities[data.id] || 1) >= data.count}
 															>
 																<RiAddFill fontSize={20} />
 															</button>
 														</div>
 
-														{
-															dataApp.dataKorzina.some(item => item.id === data.id)
-																?
-
-																<Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/korzina`}>
-																	<button
-																		className="btn btn-success btn-sm rounded-sm font-light text-white"
-																	>
-																		В корзине
-																	</button>
-																</Link>
-																:
-																<button
-																	className="btn btn-primary btn-sm rounded-sm font-light text-white"
-																	onClick={() => handleAddToCart(data)}
-																>
-																	В корзину
+														{dataApp.dataKorzina.some(item => item.id === data.id) ? (
+															<Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/korzina`}>
+																<button className="btn btn-success btn-sm rounded-sm font-light text-white">
+																	В корзине
 																</button>
-														}
+															</Link>
+														) : (
+															<button
+																className="btn btn-primary btn-sm rounded-sm font-light text-white"
+																onClick={() => handleAddToCart(data)}
+															>
+																В корзину
+															</button>
+														)}
 													</div>
+												)}
 
-													<div className='mt-8'>
-														<div className='flex space-x-1'>
-															<Image src='/svg/delivery.svg' alt='Доставка' width={20} height={20} />
-															<p className='border-b-2 border-dotted text-sm text-gray-600'>
-																Рассчитать доставку
-															</p>
-														</div>
-														<div className='mt-3 text-sm text-gray-600'>
-															<div className='flex space-x-1'>
-																<Image src='/svg/info.svg' alt='Доставка' width={20} height={20} />
-																<p className=''>
-																	Самовывоз сегодня - Гродно
-																</p>
-															</div>
-															<p className='pl-6'>
-																Доставка на завтра
-															</p>
-														</div>
-														<p className='text-xs font-light text-gray-500 mt-5'>
-															Цена действительна только для партнеров
+												{/* {data.count === 0 && (
+													<p className='text-red-500 text-xs font-semibold mt-5'>Нет в наличии</p>
+												)} */}
+
+												<div className='mt-8'>
+													<div className='flex space-x-1'>
+														<Image src='/svg/delivery.svg' alt='Доставка' width={20} height={20} />
+														<p className='border-b-2 border-dotted text-sm text-gray-600'>
+															Рассчитать доставку
 														</p>
 													</div>
-
+													<div className='mt-3 text-sm text-gray-600'>
+														<div className='flex space-x-1'>
+															<Image src='/svg/info.svg' alt='Инфо' width={20} height={20} />
+															<p>Самовывоз сегодня - Гродно</p>
+														</div>
+														<p className='pl-6'>Доставка на завтра</p>
+													</div>
+													<p className='text-xs font-light text-gray-500 mt-5'>
+														Цена действительна только для партнеров
+													</p>
 												</div>
 											</div>
 										</article>
@@ -287,109 +303,105 @@ const OneProductPage = observer(({ categories, data, dataAllProduct }) => {
 										</article>
 									</div>
 
-									<article className='sd:block xz:hidden bg-slate-50 sd:py-8 xz:py-5 sd:px-6 xz:px-2'>
-										<div className=''>
-											<div className='mb-4'>
-												<h2 className='text-xs text-gray-700'>
-													Артикул: <span className='font-semibold'>{data.article}</span>
-												</h2>
-											</div>
-											<div className='sd:block xz:hidden'>
-												{
-													user?.isAuth ?
-														<p className='text-4xl font-semibold text-gray-800'>
-															{dataApp.currency === 'USD' ? `$${data.price} ` : `${convertPrice(data.price)} BYN`}
-														</p>
-														:
-														<Link href='/login' className='flex underline text-sm text-gray-700'>
-															Узнать цену <Image src='/svg/arrow-right.svg' className='-rotate-45 ml-2' alt='Переход для регистрации' width={15} height={15} />
-														</Link>
-												}
+					{/* правый блок (десктоп), можно продублировать логику как в xz блоке при необходимости */}
+					<article className='sd:block xz:hidden bg-slate-50 sd:py-8 xz:py-5 sd:px-6 xz:px-2'>
+						<div className=''>
+							<div className='mb-4'>
+								<h2 className='text-xs text-gray-700'>
+									Артикул: <span className='font-semibold'>{data.article}</span>
+								</h2>
+							</div>
 
-												<div className={`flex items-center ${data.status === 'В наличии' ? 'text-green-500' : 'text-orange-500'} mt-3`}>
-													<div className={`w-1 h-1 rounded-full ${data.status === 'В наличии' ? 'bg-green-500' : 'bg-orange-500'} bg-green-500`} />
-													<p className='ml-1 text-xs'>
-														{data.status}
-													</p>
-												</div>
+							{user?.isAuth ? (
+								<p className={`text-4xl font-semibold text-gray-800 ${data.count > 0 ? 'block': 'hidden'}`}>
+									{dataApp.currency === 'USD' ? `$${data.price}` : `${convertPrice(data.price)} BYN`}
+								</p>
+							) : (
+								<Link href='/login' className='flex underline text-sm text-gray-700'>
+									Узнать цену <Image src='/svg/arrow-right.svg' className='-rotate-45 ml-2' alt='Переход для регистрации' width={15} height={15} />
+								</Link>
+							)}
 
-												<div className='flex space-x-2 mt-8'>
-													<div className="join rounded-sm">
-														<button
-															className="join-item btn btn-sm px-2 border border-gray-300"
-															onClick={() => handleQuantityChange(data.id, -1)}
-														>
-															<RiSubtractFill fontSize={20} />
-														</button>
-														<button
-															className="btn btn-sm px-4 join-item pointer-events-none bg-white border border-gray-300"
-														>
-															{quantities[data.id] || 1}
-														</button>
-														<button
-															className="join-item btn btn-sm px-2 border border-gray-300"
-															onClick={() => handleQuantityChange(data.id, 1)}
-														>
-															<RiAddFill fontSize={20} />
-														</button>
-													</div>
+							<div className={`flex items-center ${data.count > 0 ? 'text-green-500' : 'text-red-500'} mt-3`}>
+								<div className={`w-1 h-1 rounded-full ${data.count > 0 ? 'bg-green-500' : 'bg-red-500'}`} />
+								<p className='ml-1 text-xs'>
+									{data.count > 0 ? 'В наличии' : 'Нет в наличии'}
+								</p>
+							</div>
 
-													{
-														dataApp.dataKorzina.some(item => item.id === data.id)
-															?
+							{user?.isAuth && data.count > 0 && (
+								<div className='flex space-x-2 mt-8'>
+									<div className="join rounded-sm">
+										<button
+											className="join-item btn btn-sm px-2 border border-gray-300"
+											onClick={() => handleQuantityChange(data.id, -1, data.count)}
+											disabled={(quantities[data.id] || 1) <= 1}
+										>
+											<RiSubtractFill fontSize={20} />
+										</button>
+										<button
+											className="btn btn-sm px-4 join-item pointer-events-none bg-white border border-gray-300"
+										>
+											{quantities[data.id] || 1}
+										</button>
+										<button
+											className="join-item btn btn-sm px-2 border border-gray-300"
+											onClick={() => handleQuantityChange(data.id, 1, data.count)}
+											disabled={(quantities[data.id] || 1) >= data.count}
+										>
+											<RiAddFill fontSize={20} />
+										</button>
+									</div>
 
-															<Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/korzina`}>
-																<button
-																	className="btn btn-success btn-sm rounded-sm font-light text-white"
-																>
-																	В корзине
-																</button>
-															</Link>
-															:
-															<button
-																className="btn btn-primary btn-sm rounded-sm font-light text-white"
-																onClick={() => handleAddToCart(data)}
-															>
-																В корзину
-															</button>
-													}
-												</div>
-
-												<div className='mt-8'>
-													<div className='flex space-x-1'>
-														<Image src='/svg/delivery.svg' alt='Доставка' width={20} height={20} />
-														<p className='border-b-2 border-dotted text-sm text-gray-600'>
-															Рассчитать доставку
-														</p>
-													</div>
-													<div className='mt-3 text-sm text-gray-600'>
-														<div className='flex space-x-1'>
-															<Image src='/svg/info.svg' alt='Доставка' width={20} height={20} />
-															<p className=''>
-																Самовывоз сегодня - Гродно
-															</p>
-														</div>
-														<p className='pl-6'>
-															Доставка на завтра
-														</p>
-													</div>
-													<p className='text-xs font-light text-gray-500 mt-5'>
-														Цена действительна только для партнеров
-													</p>
-												</div>
-
-											</div>
-										</div>
-									</article>
+									{dataApp.dataKorzina.some(item => item.id === data.id) ? (
+										<Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/korzina`}>
+											<button className="btn btn-success btn-sm rounded-sm font-light text-white">
+												В корзине
+											</button>
+										</Link>
+									) : (
+										<button
+											className="btn btn-primary btn-sm rounded-sm font-light text-white"
+											onClick={() => handleAddToCart(data)}
+										>
+											В корзину
+										</button>
+									)}
 								</div>
-						}
-					</div>
+							)}
+
+							{/* {data.count === 0 && (
+												<p className='text-red-500 text-xs font-semibold mt-5'>Нет в наличии</p>
+											)} */}
+
+							<div className='mt-8'>
+								<div className='flex space-x-1'>
+									<Image src='/svg/delivery.svg' alt='Доставка' width={20} height={20} />
+									<p className='border-b-2 border-dotted text-sm text-gray-600'>
+										Рассчитать доставку
+									</p>
+								</div>
+								<div className='mt-3 text-sm text-gray-600'>
+									<div className='flex space-x-1'>
+										<Image src='/svg/info.svg' alt='Инфо' width={20} height={20} />
+										<p>Самовывоз сегодня - Гродно</p>
+									</div>
+									<p className='pl-6'>Доставка на завтра</p>
+								</div>
+								<p className='text-xs font-light text-gray-500 mt-5'>
+									Цена действительна только для партнеров
+								</p>
+							</div>
+						</div>
+					</article>
 				</div>
+						}
 			</div>
+		</div>
+			</div >
 		</section >
 	)
 })
 
-
-
 export default OneProductPage
+
