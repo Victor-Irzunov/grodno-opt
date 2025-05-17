@@ -3,6 +3,64 @@ import { NextResponse } from 'next/server';
 
 const prisma = new PrismaClient();
 
+export async function DELETE(req) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const orderId = parseInt(searchParams.get("orderId"), 10);
+
+    if (!Number.isInteger(orderId)) {
+      return NextResponse.json({ message: "Некорректный или отсутствующий orderId" }, { status: 400 });
+    }
+
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        orderItems: true,
+        buyer: true,
+      },
+    });
+
+    if (!order) {
+      return NextResponse.json({ message: "Заказ не найден" }, { status: 404 });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      for (const item of order.orderItems) {
+        const product = await tx.product.findUnique({
+          where: { id: item.productId },
+          select: { count: true, status: true },
+        });
+
+        if (product) {
+          const updatedCount = product.count + item.quantity;
+
+          await tx.product.update({
+            where: { id: item.productId },
+            data: {
+              count: {
+                increment: item.quantity,
+              },
+              status: updatedCount > 0 ? "В наличии" : product.status,
+            },
+          });
+        }
+      }
+
+      await tx.orderItem.deleteMany({ where: { orderId } });
+      await tx.shippingInfo.deleteMany({ where: { orderId } });
+      await tx.order.delete({ where: { id: orderId } });
+    });
+
+    return NextResponse.json({ message: "Заказ успешно удалён" }, { status: 200 });
+  } catch (error) {
+    console.error('❌ Ошибка при удалении заказа:', error);
+    return NextResponse.json({ message: 'Серверная ошибка при удалении заказа' }, { status: 500 });
+  }
+}
+
+
+
+
 
 export async function POST(req) {
   try {
@@ -27,7 +85,6 @@ export async function POST(req) {
     if (!buyer) {
       return NextResponse.json({ message: 'Пользователь не является оптовым покупателем' }, { status: 404 });
     }
-    console.log('🚀 POST buyer:', buyer);
 
     // Обновляем userData
     await prisma.userData.update({
@@ -39,7 +96,6 @@ export async function POST(req) {
       },
     });
 
-    // Расчёт суммы
     const totalAmount = Number(
       data.reduce((sum, item) => {
         const price = parseFloat(item.price);
@@ -48,7 +104,6 @@ export async function POST(req) {
       }, 0).toFixed(2)
     );
 
-    // Баланс и долг
     let newBalance = Number(buyer.balance);
     let newDebt = Number(buyer.debt);
 
@@ -58,10 +113,7 @@ export async function POST(req) {
       newBalance = 0;
     }
 
-    console.log('⏳ Обновляем покупателя: balance:', newBalance, 'debt (без изменений):', newDebt);
-
     const result = await prisma.$transaction(async (tx) => {
-      // Создание заказа
       const order = await tx.order.create({
         data: {
           buyerId: buyer.id,
@@ -88,7 +140,6 @@ export async function POST(req) {
         },
       });
 
-      // Обновляем только баланс покупателя
       await tx.wholesaleBuyer.update({
         where: { id: buyer.id },
         data: {
@@ -96,7 +147,6 @@ export async function POST(req) {
         },
       });
 
-      // Записываем транзакцию
       await tx.balanceTransaction.create({
         data: {
           buyerId: buyer.id,
@@ -105,22 +155,24 @@ export async function POST(req) {
         },
       });
 
-      // Уменьшаем остаток по каждому товару без ухода в минус
       for (const item of data) {
         const product = await tx.product.findUnique({
           where: { id: item.id },
-          select: { count: true },
+          select: { count: true, status: true },
         });
 
         const decrementQuantity = Math.min(item.quantity, product.count);
 
         if (decrementQuantity > 0) {
+          const newCount = product.count - decrementQuantity;
+
           await tx.product.update({
             where: { id: item.id },
             data: {
               count: {
                 decrement: decrementQuantity,
               },
+              status: newCount === 0 ? "Нет в наличии" : product.status,
             },
           });
         } else {
@@ -138,10 +190,7 @@ export async function POST(req) {
   }
 }
 
-
-
 export async function GET(req) {
-
   try {
     const dataOrders = await prisma.order.findMany({
       where: {
@@ -150,19 +199,19 @@ export async function GET(req) {
       include: {
         orderItems: {
           include: {
-            product: true, // 🔁 каждый товар в заказе
+            product: true,
           },
         },
         buyer: {
           include: {
             user: {
               include: {
-                userData: true, // 👤 данные пользователя (ФИО, адрес, телефон)
+                userData: true,
               },
             },
           },
         },
-        shippingInfo: true, // 📦 информация о доставке
+        shippingInfo: true,
       },
     });
 
@@ -172,5 +221,3 @@ export async function GET(req) {
     return new NextResponse('Серверная ошибка при получении всех заказов', { status: 500 });
   }
 }
-
-

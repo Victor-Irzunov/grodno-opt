@@ -104,6 +104,7 @@ const MainAdmin = () => {
 										<thead className="bg-gray-700 text-white">
 											<tr>
 												<th className="p-2 border border-gray-600">#</th>
+												<th className="p-2 border border-gray-600">id</th>
 												<th className="p-2 border border-gray-600">Название</th>
 												<th className="p-2 border border-gray-600">Артикул</th>
 												<th className="p-2 border border-gray-600">Количество</th>
@@ -115,6 +116,7 @@ const MainAdmin = () => {
 											{items.map((product, index) => (
 												<tr key={product.id} className="hover:bg-gray-800">
 													<td className="p-2 border border-gray-700">{index + 1}</td>
+													<td className="p-2 border border-gray-700">{product.id}</td>
 													<td className="p-2 border border-gray-700">{product.title}</td>
 													<td className="p-2 border border-gray-700">{product.article}</td>
 													<td className="p-2 border border-gray-700">{product.count}</td>

@@ -97,6 +97,7 @@ const UserDataAdmin = () => {
 
             {isOpen && (
               <div className="text-sm text-white mt-5 space-y-2">
+                <p><strong>id:</strong> {user.id}</p>
                 <p><strong>Телефон:</strong> {user.userData?.phone}</p>
                 <p><strong>Email:</strong> {user.email}</p>
                 <p><strong>Адрес:</strong> {user.userData?.address}</p>
