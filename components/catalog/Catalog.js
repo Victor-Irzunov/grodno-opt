@@ -9,6 +9,7 @@ import phoneNumbers from "@/config/config";
 import Link from "next/link";
 import { RiAddFill, RiSubtractFill } from "react-icons/ri";
 import { transliterate } from "@/transliterate/transliterate";
+import { sendOrderTelegram } from "@/http/telegramAPI";
 
 const Catalog = observer(({ data, searchParams }) => {
   const [sortOrder, setSortOrder] = useState("asc");
@@ -19,10 +20,13 @@ const Catalog = observer(({ data, searchParams }) => {
   const [filteredData, setFilteredData] = useState(data);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const { user, dataApp, handleCurrencyChange, updateIsState } = useContext(MyContext);
+
   const inputRef = useRef(null);
-  const modalRef = useRef(null); // добавлено
+  const modalRef = useRef(null);
+  const orderRef = useRef(null);
   const [prod, setProd] = useState({});
   const [isOpen, setIsOpen] = useState(false);
+  const [orderQty, setOrderQty] = useState("1") // было: useState(1)
 
   const search = searchParams.get('search');
   const categories = Array.from(new Map(data.map(item => [item.category.id, { id: item.category.id, title: item.category.title }])).values());
@@ -143,6 +147,30 @@ const Catalog = observer(({ data, searchParams }) => {
       .toLowerCase();
   };
 
+  const handleOrderClick = (product) => {
+    setProd(product);
+    setOrderQty(1);
+    orderRef.current?.showModal();
+  };
+
+  const handleSendOrder = async () => {
+    const message = `\u{1F4E2} <b>Заказ клиента</b> <b>ID:</b>${user.userData.id}<b>, Клиент:</b> ${user.userData?.userData?.fullName}<b>, Товар:</b> ${prod.title}<b>, Количество:</b> ${orderQty}`;
+    try {
+
+      const qty = Number(orderQty)
+      if (!qty || qty < 1) {
+        message.error("Введите корректное количество")
+        return
+      }
+      await sendOrderTelegram(message);
+      alert("Заявка отправлена");
+    } catch (err) {
+      console.error(err);
+      alert("Ошибка отправки");
+    }
+    orderRef.current?.close();
+  };
+
   return (
     <section>
       <div className='py-4 border-b'>
@@ -178,10 +206,11 @@ const Catalog = observer(({ data, searchParams }) => {
                       <Link href={`/catalog/${linkTransliterate(el.category.title)}/${linkTransliterate(el.title)}/${linkTransliterate(el.article)}/`}>
                         <p>{el.title} ({el.article})</p>
                       </Link>
-                      <div className={`flex items-center mt-1 ${el.count > 0 ? "text-green-500": "text-blue-500"}`}>
-                        <div className={`w-1 h-1 rounded-full ${el.count > 0 ? "bg-green-500": "bg-transparent"}`} />
+                      <div className={`flex items-center mt-1 ${el.count > 0 ? "text-green-500" : "text-blue-500"}`}>
+                        <div className={`w-1 h-1 rounded-full ${el.count > 0 ? "bg-green-500" : "bg-transparent"}`} />
                         <p className='ml-1 text-xs'>
-                          {el.count > 0 ? 'В наличии' : ''}
+                          {/* {el.count > 0 ? 'В наличии' : ''} */}
+                          {el.status}
                         </p>
 
                         {typeof el.images === "string" && el.images !== "[]" && el.images !== "[]".toString() ? (
@@ -234,7 +263,13 @@ const Catalog = observer(({ data, searchParams }) => {
                             )}
                           </>
                         ) : (
-                          <span className="text-red-500 font-medium text-sm">Нет в наличии</span>
+                          <div className="flex items-center space-x-4">
+                            <span className="text-red-500 font-medium text-sm">Нет в наличии</span>
+                            <div className=''>
+                              <button className='btn bg-white text-primary btn-sm rounded-none' onClick={() => handleOrderClick(el)}>Заказать</button>
+                            </div>
+                          </div>
+
                         )}
                       </div>
                     )}
@@ -300,6 +335,29 @@ const Catalog = observer(({ data, searchParams }) => {
           <AsideMenu data={categories} setSelectedCategory={setSelectedCategory} selectedCategory={selectedCategory} block setIsOpen={setIsOpen} />
         </div>
       </div>
+
+
+      <dialog ref={orderRef} className='modal'>
+        <div className='modal-box'>
+          <h3 className='font-bold text-lg'>Заказ товара</h3>
+          <p>{prod.title}</p>
+          <input
+            type='number'
+            min='1'
+            value={orderQty}
+            onChange={(e) => setOrderQty(e.target.value)}
+            className='input input-bordered w-full mt-4'
+          />
+
+          <div className='modal-action'>
+            <button className='btn' onClick={handleSendOrder}>Отправить</button>
+            <form method='dialog'>
+              <button className='btn'>Отмена</button>
+            </form>
+          </div>
+        </div>
+      </dialog>
+
     </section>
   );
 });

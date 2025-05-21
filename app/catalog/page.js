@@ -8,15 +8,17 @@ const CatalogClient = dynamic(() => import("@/components/catalog/CatalogClient")
 const prisma = new PrismaClient();
 
 async function getData() {
-
 	try {
 		const data = await prisma.product.findMany({
+			where: {
+				isDeleted: false,
+			},
 			include: {
 				category: true,
 				group: true,
 			}
-		}
-		);
+		});
+
 		const serializedProducts = data.map((product) => ({
 			...product,
 			price: product.price.toString(),
@@ -32,6 +34,7 @@ async function getData() {
 		return [];
 	}
 }
+
 
 export const metadata = {
 	title: "Каталог запасных частей для мобильных телефонов - опт | proparts.by",

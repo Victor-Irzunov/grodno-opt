@@ -20,6 +20,7 @@ export async function GET(req) {
         userData: true, // Загружаем связанные данные (UserData)
       },
     });
+    console.log("🚀 🚀 🚀  _ GET _ user:", user)
 
     if (!user) {
       return new NextResponse('Пользователь не найден', { status: 404 });

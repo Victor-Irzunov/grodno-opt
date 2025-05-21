@@ -1,10 +1,89 @@
 -- CreateTable
+CREATE TABLE `User` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `email` VARCHAR(191) NOT NULL,
+    `password` VARCHAR(191) NOT NULL,
+    `isAdmin` BOOLEAN NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    UNIQUE INDEX `User_email_key`(`email`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `UserData` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `fullName` VARCHAR(191) NOT NULL,
+    `address` VARCHAR(191) NOT NULL,
+    `phone` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+    `userId` INTEGER NOT NULL,
+
+    UNIQUE INDEX `UserData_userId_key`(`userId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Category` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `title` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `Category_title_key`(`title`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Group` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `title` VARCHAR(191) NOT NULL,
+    `categoryId` INTEGER NOT NULL,
+    `discount` DECIMAL(5, 2) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Product` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `title` VARCHAR(191) NOT NULL,
+    `status` VARCHAR(191) NOT NULL,
+    `count` INTEGER NOT NULL,
+    `price` DECIMAL(12, 3) NOT NULL,
+    `article` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+    `groupId` INTEGER NOT NULL,
+    `categoryId` INTEGER NOT NULL,
+    `isDeleted` BOOLEAN NOT NULL DEFAULT false,
+    `images` JSON NULL,
+
+    UNIQUE INDEX `Product_article_key`(`article`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `PriceHash` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `hash` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    UNIQUE INDEX `PriceHash_hash_key`(`hash`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `WholesaleBuyer` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `userId` INTEGER NOT NULL,
     `balance` DECIMAL(12, 2) NOT NULL,
     `debt` DECIMAL(12, 2) NOT NULL DEFAULT 0.00,
     `discount` DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+    `limit` DECIMAL(12, 2) NOT NULL DEFAULT 0.00,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -30,6 +109,8 @@ CREATE TABLE `Order` (
     `status` VARCHAR(191) NOT NULL DEFAULT 'pending',
     `deliveryStatus` VARCHAR(191) NOT NULL DEFAULT 'processing',
     `totalAmount` DECIMAL(12, 2) NOT NULL,
+    `deliveryCost` DECIMAL(12, 2) NULL,
+    `message` VARCHAR(191) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -41,7 +122,7 @@ CREATE TABLE `ShippingInfo` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `orderId` INTEGER NOT NULL,
     `courier` VARCHAR(191) NOT NULL,
-    `trackingNumber` VARCHAR(191) NOT NULL,
+    `trackingNumber` VARCHAR(191) NULL,
     `address` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
@@ -79,6 +160,7 @@ CREATE TABLE `ReturnItem` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `returnId` INTEGER NOT NULL,
     `productId` INTEGER NOT NULL,
+    `orderItemId` INTEGER NOT NULL,
     `quantity` INTEGER NOT NULL,
     `refundAmount` DECIMAL(12, 2) NOT NULL,
 

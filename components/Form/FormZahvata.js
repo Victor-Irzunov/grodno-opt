@@ -52,7 +52,7 @@ const FormZahvata = ({ title, btn }) => {
 			alert('Заполните обязательные поля!');
 			return;
 		}
-		let messageForm = `<b>Заказ с сайта evakuator555.by:</b>\n`;
+		let messageForm = `<b>Заказ с сайта :</b>\n`;
 		messageForm += `<b>--------------- </b>\n`
 		messageForm += `<b>Имя: ${name || 'пусто'} </b>\n`
 		messageForm += `<b>--------------- </b>\n`

@@ -1,15 +1,25 @@
 import { MyContext } from '@/contexts/MyContextProvider'
-import { Button } from 'antd'
+import { Button, Modal, Popconfirm, message } from 'antd'
 import { useContext, useMemo, useState } from 'react'
+import Image from 'next/image'
+import EditProductForm from '../FormsAdmin/EditProductForm'
+import { observer } from 'mobx-react-lite'
 
-const MainAdmin = () => {
-	const { products } = useContext(MyContext)
+const MainAdmin = observer(() => {
+	const { products, updateIsState } = useContext(MyContext)
 	const [selectedCategory, setSelectedCategory] = useState('')
 	const [selectedGroup, setSelectedGroup] = useState('')
+	const [sortAsc, setSortAsc] = useState(false)
+	const [editModalOpen, setEditModalOpen] = useState(false)
+	const [currentProduct, setCurrentProduct] = useState(null)
 
-	// Группировка: категория → группа → продукты
+	// фильтруем только активные (неудалённые) товары
+	const activeProducts = useMemo(() => {
+		return products.filter(product => product.isDeleted === false)
+	}, [products])
+
 	const grouped = useMemo(() => {
-		return products.reduce((acc, product) => {
+		return activeProducts.reduce((acc, product) => {
 			const categoryTitle = product.category?.title || 'Без категории'
 			const groupTitle = product.group?.title || 'Без группы'
 
@@ -20,10 +30,51 @@ const MainAdmin = () => {
 
 			return acc
 		}, {})
-	}, [products])
+	}, [activeProducts])
 
 	const categories = Object.keys(grouped)
 	const groups = selectedCategory ? Object.keys(grouped[selectedCategory] || {}) : []
+
+	const handleEdit = async (values) => {
+		try {
+			const res = await fetch('/api/admin/product/edit', {
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(values)
+			})
+			if (!res.ok) throw new Error()
+			message.success('Товар обновлён')
+			setEditModalOpen(false)
+			updateIsState()
+		} catch {
+			message.error('Ошибка при обновлении')
+		}
+	}
+
+	const handleDelete = async (productId) => {
+		try {
+			const res = await fetch('/api/admin/product/edit', {
+				method: 'DELETE',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ id: productId })
+			})
+
+			if (!res.ok) {
+				const errorText = await res.text()
+				if (errorText.includes('P2014')) {
+					message.error('Ты пытаешься удалить товар, который уже участвует в заказах')
+				} else {
+					message.error('Ошибка при удалении товара')
+				}
+				throw new Error(errorText)
+			}
+
+			message.success('Товар удалён')
+			updateIsState()
+		} catch (err) {
+			console.error(err)
+		}
+	}
 
 	return (
 		<div className="pt-10 px-12 text-white">
@@ -68,6 +119,14 @@ const MainAdmin = () => {
 					</div>
 				)}
 
+				<Button
+					size="small"
+					style={{ backgroundColor: '#1f1f1f', color: '#fff' }}
+					onClick={() => setSortAsc((prev) => !prev)}
+				>
+					Сортировать по количеству ({sortAsc ? '↑' : '↓'})
+				</Button>
+
 				{(selectedCategory || selectedGroup) && (
 					<Button
 						size="small"
@@ -77,14 +136,13 @@ const MainAdmin = () => {
 							setSelectedCategory('')
 							setSelectedGroup('')
 						}}
-
 					>
 						Сбросить фильтры
 					</Button>
 				)}
 			</div>
 
-			{/* Вывод таблиц */}
+			{/* Таблицы */}
 			{(selectedCategory ? [selectedCategory] : categories).map((category) => (
 				<div key={category} className="mb-10">
 					<h2 className="text-2xl mb-4 text-primary font-bold underline">{category}</h2>
@@ -94,6 +152,9 @@ const MainAdmin = () => {
 						: Object.keys(grouped[category])
 					).map((group) => {
 						const items = grouped[category][group]
+						const sortedItems = [...items].sort((a, b) =>
+							sortAsc ? a.count - b.count : b.count - a.count
+						)
 
 						return (
 							<div key={group} className="mb-6">
@@ -110,10 +171,11 @@ const MainAdmin = () => {
 												<th className="p-2 border border-gray-600">Количество</th>
 												<th className="p-2 border border-gray-600">Цена</th>
 												<th className="p-2 border border-gray-600">Статус</th>
+												<th className="p-2 border border-gray-600">Действия</th>
 											</tr>
 										</thead>
 										<tbody>
-											{items.map((product, index) => (
+											{sortedItems.map((product, index) => (
 												<tr key={product.id} className="hover:bg-gray-800">
 													<td className="p-2 border border-gray-700">{index + 1}</td>
 													<td className="p-2 border border-gray-700">{product.id}</td>
@@ -124,6 +186,27 @@ const MainAdmin = () => {
 														{parseFloat(product.price).toFixed(2)} $
 													</td>
 													<td className="p-2 border border-gray-700">{product.status}</td>
+													<td className="p-2 border border-gray-700 flex items-center gap-2">
+														<Image
+															src='/svg/edit.svg'
+															alt='edit'
+															width={16}
+															height={16}
+															className='cursor-pointer'
+															onClick={() => {
+																setCurrentProduct(product)
+																setEditModalOpen(true)
+															}}
+														/>
+														<Popconfirm
+															title='Вы точно хотите удалить товар?'
+															onConfirm={() => handleDelete(product.id)}
+															okText='Да'
+															cancelText='Нет'
+														>
+															<Button danger size='small'>Удалить</Button>
+														</Popconfirm>
+													</td>
 												</tr>
 											))}
 										</tbody>
@@ -134,8 +217,19 @@ const MainAdmin = () => {
 					})}
 				</div>
 			))}
+
+			<Modal
+				open={editModalOpen}
+				onCancel={() => setEditModalOpen(false)}
+				footer={null}
+				title={`Редактировать товар ID: ${currentProduct?.id}`}
+			>
+				{currentProduct && (
+					<EditProductForm product={currentProduct} onFinish={handleEdit} />
+				)}
+			</Modal>
 		</div>
 	)
-}
+})
 
 export default MainAdmin

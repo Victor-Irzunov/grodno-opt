@@ -60,6 +60,7 @@ model Product {
   updatedAt   DateTime     @updatedAt
   groupId     Int
   categoryId  Int
+  isDeleted   Boolean @default(false)
   group       Group        @relation(fields: [groupId], references: [id])
   category    Category     @relation(fields: [categoryId], references: [id])
   images      Json?

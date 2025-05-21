@@ -54,22 +54,16 @@ const MyContextProvider = ({ children }) => {
     // }
   }, [state, isState]);
 
-  // useEffect(() => {
-  //   getAllCategoryAndGroup().then(data => {
-  //     if (data) {
-  //       setCategories(data)
-  //    }
-  //   })
-  // },[])
 
-  useEffect(() => {
-    getAllProducs()
-      .then(data => {
-        if (data) {
-          setProducts(data.serializedProducts)
-        }
-      })
-  }, [])
+ useEffect(() => {
+  getAllProducs()
+    .then(data => {
+      if (data) {
+        setProducts(data.serializedProducts)
+      }
+    })
+}, [isState])
+
 
 
 
