@@ -1,7 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import { google } from 'googleapis';
 import { NextResponse } from 'next/server';
-import crypto from 'crypto';
+// import crypto from 'crypto';
+import crypto from 'node:crypto';
 
 const prisma = new PrismaClient();
 

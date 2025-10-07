@@ -1,6 +1,42 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* /app/globals.css */
+
+/* === Tailwind v4: подключаем фреймворк одной строкой === */
+@import "tailwindcss";
+
+/* === DaisyUI v5 для Tailwind v4: включаем через CSS-плагин === */
+@plugin "daisyui" {
+  themes: light --default;
+}
+
+/* === Пользовательская тема/брейкпоинты Tailwind v4 через @theme === */
+@theme {
+  /* Брейкпоинты как у тебя в config (px -> rem) */
+  --breakpoint-xz: 20rem;       /* 320px  */
+  --breakpoint-xy: 23.5rem;     /* 376px  */
+  --breakpoint-xx: 25.9375rem;  /* 415px  */
+  --breakpoint-xs: 30rem;       /* 480px  */
+  --breakpoint-xm: 35.9375rem;  /* 575px  */
+  --breakpoint-ss: 38.75rem;    /* 620px  */
+  --breakpoint-sm: 48rem;       /* 768px  */
+  --breakpoint-sd: 61.9375rem;  /* 991px  */
+  --breakpoint-md: 66.25rem;    /* 1060px */
+  --breakpoint-lg: 75rem;       /* 1200px */
+  --breakpoint-xl: 106.25rem;   /* 1700px */
+  --breakpoint-2xl: 100rem;     /* 1600px */
+  --breakpoint-3xl: 120rem;     /* 1920px */
+
+  /* При желании можно описать токены цветов тематики */
+  --color-primary: #0171E3;
+  --color-secondary: #0171E3;
+  --color-accent: #FAFAFC;
+  --color-neutral: #F1F1F3;
+  --color-base-100: #ffffff;
+  --color-base-200: #F1F1F3;
+
+  /* Тени, scale и т.п. можно задавать как утилиты в @utility, но
+     твои кастомные CSS ниже оставляем без изменений. */
+}
+
 
 
 @layer utilities {

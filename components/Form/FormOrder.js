@@ -1,10 +1,10 @@
-"use client"
+"use client";
 import { sendOrderTelegram } from '@/http/telegramAPI';
 import { useState } from 'react';
-import InputMask from 'react-input-mask';
+import PhoneInput from '@/components/Form/MaskPhone/PhoneInput';
 
 const FormOrder = ({ selectedProduct, closeModal, setIsFormSubmitted, title, btn, no, user }) => {
-	const [formData, setFormData] = useState({ phone: '', message: '', question: '', serviceType: '', address: '', email: '' });
+	const [formData, setFormData] = useState({ phone: '', message: '', question: '', serviceType: '', address: '', email: '', workshop: '' });
 	const [tel, setTel] = useState('');
 	const [alertActive, setAlertActive] = useState(false);
 	const [alertActive2, setAlertActive2] = useState(false);
@@ -15,12 +15,11 @@ const FormOrder = ({ selectedProduct, closeModal, setIsFormSubmitted, title, btn
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
+
 		if (!formData.address.trim()) {
 			setAlertText2('Введите адрес');
 			setAlertActive2(true);
-			setTimeout(() => {
-				setAlertActive2(false);
-			}, 4000);
+			setTimeout(() => setAlertActive2(false), 4000);
 			return;
 		}
 
@@ -31,6 +30,13 @@ const FormOrder = ({ selectedProduct, closeModal, setIsFormSubmitted, title, btn
 			return;
 		}
 
+		const telDigitsOnly = tel.replace(/\D/g, '');
+		if (telDigitsOnly.length !== 12) {
+			setAlertText('Введите весь номер телефона в правильном формате: +375 XX XXX-XX-XX');
+			setAlertActive(true);
+			setTimeout(() => setAlertActive(false), 4000);
+			return;
+		}
 
 		let messageForm = `<b>Заявка с сайта Опт Гродно:</b>\n`;
 		messageForm += `<b>${selectedProduct || 'Узнать'} </b>\n`;
@@ -43,69 +49,20 @@ const FormOrder = ({ selectedProduct, closeModal, setIsFormSubmitted, title, btn
 		messageForm += `<b>--------------- </b>\n`;
 		messageForm += `<b>Сообщение: ${formData.message || '-'} </b>\n`;
 
-		const telDigitsOnly = tel.replace(/\D/g, '');
-		if (telDigitsOnly.length !== 12) {
-			setAlertText('Введите весь номер телефона в правильном формате: +375 XX XXX-XX-XX');
-			setAlertActive(true);
-			setTimeout(() => {
-				setAlertActive(false);
-			}, 4000);
-			return;
-		}
-
 		sendOrderTelegram(messageForm)
 			.then(data => {
 				if (data.ok) {
-					// window.location.href = '/thank-you';
-					if (!no) {
-						setIsFormSubmitted(true);
-					}
-					setTimeout(() => {
-						closeModal()
-					}, 3000)
+					if (!no) setIsFormSubmitted?.(true);
+					setTimeout(() => closeModal?.(), 3000);
 				} else {
 					console.error('Ошибка отправки формы');
 				}
-			})
+			});
 	};
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
-		setFormData({ ...formData, [name]: value });
-	};
-
-	const handlePhoneChange = (e) => {
-		const newValue = e.target.value;
-		setTel(newValue);
-	};
-
-	const beforeMaskedValueChange = (newState, oldState, userInput) => {
-		let { value } = newState;
-		const a = value.replace(/\D/g, '').slice(3, 5);
-		let selection = newState.selection;
-		if (a.length === 2) {
-			const b = ["29", "33", "44", "25"].includes(a);
-			if (!b) {
-				value = '+375';
-				selection = { start: 5, end: 5 }
-				setAlertText('Введите код оператора 29,44,33,25')
-				setAlertActive(true);
-				setTimeout(() => {
-					setAlertActive(false)
-				}, 3000)
-			}
-		}
-		const cursorPosition = selection ? selection.start : null;
-		if (value.endsWith('-') && userInput !== '-' && !tel.endsWith('-')) {
-			if (cursorPosition === value.length) {
-				selection = { start: cursorPosition - 1, end: cursorPosition - 1 };
-			}
-			value = value.slice(0, -1);
-		}
-		return {
-			value,
-			selection
-		};
+		setFormData(prev => ({ ...prev, [name]: value }));
 	};
 
 	return (
@@ -113,22 +70,24 @@ const FormOrder = ({ selectedProduct, closeModal, setIsFormSubmitted, title, btn
 			<p className='text-black uppercase font-bold text-center mb-5 text-xl'>
 				{title ? 'Напишите нам' : null}
 			</p>
+
 			<form className={`text-black ${no ? 'flex items-center sd:flex-row xz:flex-col' : ''}`} onSubmit={handleSubmit}>
 
+				{/* Телефон */}
 				<div className="form-control xz:w-full sd:w-auto">
 					<label className={`label ${no ? 'hidden' : 'flex'}`}>
 						<span className="label-text text-[11px]">Телефон</span>
 						<span className="label-text-alt text-[9px]">Обязательное поле</span>
 					</label>
-					<InputMask
-						placeholder="+375 29 123-45-67"
-						mask="+3\7\5 99 999 99 99"
-						maskChar={'-'}
-						className={`input input-bordered ${alertActive ? 'input-error' : ''} bg-white placeholder:text-[12px]`}
-						beforeMaskedValueChange={beforeMaskedValueChange}
+
+					<PhoneInput
 						value={tel}
-						onChange={handlePhoneChange}
+						onChange={setTel}
+						setAlertText={setAlertText}
+						setAlertActive={setAlertActive}
+						bg={false}
 					/>
+
 					<div className={`label ${no ? 'pb-0 pt-0' : ''}`}>
 						<span className="label-text-alt text-red-300">
 							{alertActive ? alertText : ''}
@@ -136,7 +95,7 @@ const FormOrder = ({ selectedProduct, closeModal, setIsFormSubmitted, title, btn
 					</div>
 				</div>
 
-				{/* Поле Email */}
+				{/* Email */}
 				<div className="form-control mt-3">
 					<label className="label">
 						<span className="label-text text-[11px]">Email</span>
@@ -153,7 +112,7 @@ const FormOrder = ({ selectedProduct, closeModal, setIsFormSubmitted, title, btn
 					{alertActive3 && <div className="label-text-alt text-red-300 mt-2">{alertText3}</div>}
 				</div>
 
-				{/* Поле Адрес */}
+				{/* Адрес */}
 				<div className="form-control mt-3">
 					<label className="label">
 						<span className="label-text text-[11px]">Адрес мастерской</span>
@@ -168,10 +127,9 @@ const FormOrder = ({ selectedProduct, closeModal, setIsFormSubmitted, title, btn
 						placeholder="Введите ваш адрес"
 					/>
 				</div>
-				{/* Ошибка отображения */}
 				{alertActive2 && <div className="label-text-alt text-red-300 mt-2">{alertText2}</div>}
 
-				{/* Поле Название мастерской */}
+				{/* Название мастерской */}
 				<div className="form-control mt-3">
 					<label className="label">
 						<span className="label-text text-[11px]">Название мастерской</span>
@@ -180,31 +138,30 @@ const FormOrder = ({ selectedProduct, closeModal, setIsFormSubmitted, title, btn
 					<input
 						type="text"
 						name="workshop"
-						value={formData.workshop}
+						value={formData.workshop || ''}
 						onChange={handleChange}
 						className="input input-bordered bg-white placeholder:text-[12px]"
 						placeholder="Введите название мастерской"
 					/>
 				</div>
-				{
-					!no
-						?
-						<div className="form-control mt-3">
-							<label className="label">
-								<span className="label-text text-[11px]">Сообщение</span>
-								<span className="label-text-alt text-[9px]">Необязательное поле</span>
-							</label>
-							<textarea
-								name="message"
-								value={formData.message}
-								onChange={handleChange}
-								className="textarea textarea-bordered xz:textarea-sm sd:textarea-lg bg-white placeholder:text-[12px]"
-								placeholder="Ваше сообщение"
-							></textarea>
-						</div>
-						:
-						null
-				}
+
+				{/* Сообщение (опционально) */}
+				{!no ? (
+					<div className="form-control mt-3">
+						<label className="label">
+							<span className="label-text text-[11px]">Сообщение</span>
+							<span className="label-text-alt text-[9px]">Необязательное поле</span>
+						</label>
+						<textarea
+							name="message"
+							value={formData.message}
+							onChange={handleChange}
+							className="textarea textarea-bordered xz:textarea-sm sd:textarea-lg bg-white placeholder:text-[12px]"
+							placeholder="Ваше сообщение"
+						/>
+					</div>
+				) : null}
+
 				<div className={`form-control ${no ? 'sd:ml-3 xz:ml-0 xz:mt-4 sd:mt-0' : 'mt-6'} xz:w-full sd:w-auto`}>
 					<button className="btn btn-primary font-bold text-white btn-lg" type="submit">
 						{btn}
