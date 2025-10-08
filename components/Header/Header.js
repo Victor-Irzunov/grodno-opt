@@ -132,9 +132,6 @@ const Header = observer(() => {
 			>
 				<div className='container mx-auto flex justify-between items-center'>
 
-					<p className='sd:text-xs xz:text-[9px] font-light sd:tracking-widest xz:tracking-normal '>
-						г. Гродно, пр-т Космонавтов 9, каб. 3
-					</p>
 
 					<div className='flex xz:justify-between sd:justify-end items-center space-x-3'>
 
@@ -214,7 +211,7 @@ const Header = observer(() => {
 										<Image
 											src={`/logo/logo.webp`}
 											alt='Логотип - оптовая продажа запасных частей'
-											width={150} height={150}
+											width={100} height={100}
 										/>
 									</Link>
 								</div>
@@ -662,18 +659,18 @@ const Header = observer(() => {
 								</li>
 							</ul>
 
-							
+
 						</div>
 						<div className='absolute bottom-7 right-4 text-right'>
-								<p className='mb-1 text-xs text-gray-400 font-light'>Есть вопросы?</p>
-								<p className='uppercase text-gray-600 text-[9px] mb-1'>Телефон магазина</p>
-								<div className='text-sm'>
-									<a href={`tel:${phoneNumbers.mainPhoneLink}`} className="xz:text-[10px] sd:text-xs font-light flex">
-										<Image src='/svg/phone-black.svg' alt='Телефон' width={18} height={18} className="mr-1" />
-										{phoneNumbers.mainPhone}
-									</a>
-								</div>
+							<p className='mb-1 text-xs text-gray-400 font-light'>Есть вопросы?</p>
+							<p className='uppercase text-gray-600 text-[9px] mb-1'>Телефон магазина</p>
+							<div className='text-sm'>
+								<a href={`tel:${phoneNumbers.mainPhoneLink}`} className="xz:text-[10px] sd:text-xs font-light flex">
+									<Image src='/svg/phone-black.svg' alt='Телефон' width={18} height={18} className="mr-1" />
+									{phoneNumbers.mainPhone}
+								</a>
 							</div>
+						</div>
 					</div>
 				</nav>
 			</Affix>
