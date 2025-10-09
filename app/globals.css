@@ -1,14 +1,9 @@
 /* /app/globals.css */
-
-/* === Tailwind v4: подключаем фреймворк одной строкой === */
 @import "tailwindcss";
-
-/* === DaisyUI v5 для Tailwind v4: включаем через CSS-плагин === */
 @plugin "daisyui" {
   themes: light --default;
 }
 
-/* === Пользовательская тема/брейкпоинты Tailwind v4 через @theme === */
 @theme {
   /* Брейкпоинты как у тебя в config (px -> rem) */
   --breakpoint-xz: 20rem;       /* 320px  */
@@ -35,15 +30,11 @@
 
 }
 
-
-
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
 }
-
-  
 
 @layer components {
   .custom-gradient-border {
@@ -330,8 +321,6 @@ box-shadow: inset 0 0 1px #0000001c;
 	height: auto;
  }
 
-
-
 .mask-container2 {
 	position: relative;
 	width: 100%;
@@ -342,8 +331,6 @@ box-shadow: inset 0 0 1px #0000001c;
 	width: 50%;
 	display: block;
  }
-
-
  .mask-container5 {
 	position: relative;
 	width: 100%;
@@ -473,7 +460,6 @@ box-shadow: inset 0 0 1px #0000001c;
 	position: sticky;
 }
 
-
 .gradient-text {
 	display: inline-block;
 	background-clip: text;
@@ -497,8 +483,6 @@ box-shadow: inset 0 0 1px #0000001c;
 	background-size: 100% 90%;
 }
 
-
-
 .gradient-text-responsive {
   background-clip: text;
   -webkit-text-fill-color: rgba(0, 0, 0, 0);
@@ -509,13 +493,13 @@ box-shadow: inset 0 0 1px #0000001c;
   background-size: 100% 90%;
 }
 
-@media (min-width: 640px) { /* Adjust this to your 'sd:' breakpoint */
+@media (min-width: 640px) { 
   .gradient-text-responsive {
     background-image: url('/ipad/contentIpadPro2024/text_gradient_3.webp');
   }
 }
 
-@media (max-width: 639px) { /* Adjust this to your 'xz:' breakpoint */
+@media (max-width: 639px) { 
   .gradient-text-responsive {
     background-image: url('/ipad/contentIpadPro2024/text_gradient_3_mobil.webp');
   }
@@ -666,7 +650,6 @@ box-shadow: inset 0 0 1px #0000001c;
 	}
 }
 
-
 .dancer-gradient {
 	position: absolute;
 	top: 0;
@@ -682,11 +665,11 @@ box-shadow: inset 0 0 1px #0000001c;
 	transition: transform 0.3s ease, box-shadow 0.3s ease;
  }
 
-
- /* :where(.css-dev-only-do-not-override-161f05s).ant-input-group-wrapper-outlined .ant-input-group-addon:first-child {
+ :where(.css-dev-only-do-not-override-161f05s).ant-input-group-wrapper-outlined .ant-input-group-addon:first-child {
 	border-radius: 2px;
-} */
-where(.css-dev-only-do-not-override-161f05s).ant-input-group >.ant-input:last-child, :where(.css-dev-only-do-not-override-161f05s).ant-input-group .ant-input-group-addon:last-child {
+}
+:where(.css-dev-only-do-not-override-161f05s).ant-input-group >.ant-input:last-child, 
+:where(.css-dev-only-do-not-override-161f05s).ant-input-group .ant-input-group-addon:last-child {
 	border-radius: 2px;
 }
 
@@ -694,14 +677,12 @@ where(.css-dev-only-do-not-override-161f05s).ant-input-group >.ant-input:last-ch
 	min-height: 0px;
 	padding: 0.5rem;
 }
- 
- 
 
-:where(.css-dev-only-do-not-override-161f05s).ant-form-item-vertical .ant-form-item-label, :where(.css-dev-only-do-not-override-161f05s).ant-col-24.ant-form-item-label, :where(.css-dev-only-do-not-override-161f05s).ant-col-xl-24.ant-form-item-label{
+:where(.css-dev-only-do-not-override-161f05s).ant-form-item-vertical .ant-form-item-label, 
+:where(.css-dev-only-do-not-override-161f05s).ant-col-24.ant-form-item-label, :where(.css-dev-only-do-not-override-161f05s).ant-col-xl-24.ant-form-item-label{
 	padding-bottom: 0px;
 }
 
- 
 .white-text input {
 	color: white !important;
  }

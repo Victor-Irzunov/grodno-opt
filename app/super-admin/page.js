@@ -52,7 +52,7 @@ function Page() {
             </div>
 
             <div className='my-8'>
-              <Link href='/'>
+              <Link href='/' className="text-blue-500">
                 На главную
               </Link>
             </div>
