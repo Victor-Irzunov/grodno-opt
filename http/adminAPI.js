@@ -1,4 +1,5 @@
 import { $authHost, $host } from "./index"
+import { normalizeProducts } from '@/lib/normalizeProduct';
 
 export const getAllFilterCars = async (filterParams) => {
 	try {
@@ -104,15 +105,14 @@ export const editUserDataAdmin = async ({ email, password, phone, fullName, disc
 };
 
 
-export const getAllProducs = async () => {
-	try {
-		const response = await $host.get('api/product');
-		return response.data;
-	} catch (error) {
-		console.error('Ошибка при получении всех продуктов:', error);
-		throw error;
-	}
-};
+export async function getAllProducs() {
+  const res = await fetch('/api/product', { cache: 'no-store' });
+  if (!res.ok) return [];
+  const json = await res.json();
+  const list = Array.isArray(json?.products) ? json.products : [];
+  return normalizeProducts(list); // ← images становится массивом
+}
+
 
 export const getAllPendingOrders = async () => {
 	try {

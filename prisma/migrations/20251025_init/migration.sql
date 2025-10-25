@@ -1,0 +1,1 @@
+CREATE TABLE IF NOT EXISTS _baseline_prisma (id INT PRIMARY KEY) ENGINE=InnoDB; DROP TABLE IF EXISTS _baseline_prisma;

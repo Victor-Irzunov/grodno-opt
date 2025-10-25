@@ -1,5 +1,4 @@
 // /app/super-admin/page.jsx
-// ФАЙЛ ПОЛНОСТЬЮ — добавлен пункт "contactRequests" в меню
 "use client";
 import AddCategoryAdmin from "@/components/CompAdmin/AddCategoryAdmin";
 import AddGroupAdmin from "@/components/CompAdmin/AddGroupAdmin";

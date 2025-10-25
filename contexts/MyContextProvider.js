@@ -1,74 +1,59 @@
-"use client"
+// /contexts/MyContextProvider.jsx
+"use client";
 import { createContext, useState, useEffect } from 'react';
 import UserStore from '../store/UserStore';
 import DataStore from '../store/DataStore';
 import { dataUser } from '../http/userAPI';
 import { dollarExchangeRate } from '@/Api-bank/api';
-import { getAllCategoryAndGroup, getAllProducs } from '@/http/adminAPI';
+import { getAllProducs } from '@/http/adminAPI';
+
 const MyContext = createContext();
 
 const MyContextProvider = ({ children }) => {
   const [state, setState] = useState({});
   const [isState, setIsState] = useState(false);
-  // const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
-  const [user] = useState(new UserStore())
-  const [dataApp] = useState(new DataStore())
+  const [user] = useState(new UserStore());
+  const [dataApp] = useState(new DataStore());
 
-  const updateState = (newState) => {
-    setState(newState);
-  };
-  const updateIsState = () => {
-    setIsState(i => !i);
-  };
+  const updateState = (newState) => setState(newState);
+  const updateIsState = () => setIsState((i) => !i);
 
   useEffect(() => {
     dataUser()
-      .then(data => {
-        user.setUserData(data)
+      .then((data) => {
+        user.setUserData(data);
         if (data) {
-          user.setIsAuth(true)
-          user.setUser(true)
+          user.setIsAuth(true);
+          user.setUser(true);
         }
       })
-      .catch(data => {
-        console.log('🚀 🚀 🚀dataUser err:', data)
-      })
-  }, [user])
+      .catch((err) => console.log('🚀 dataUser err:', err));
+  }, [user]);
 
   useEffect(() => {
-    dollarExchangeRate()
-      .then(data => {
-        dataApp.setOfficialRate(data.data.Cur_OfficialRate)
-      })
-  }, [])
+    dollarExchangeRate().then((d) => {
+      dataApp.setOfficialRate(d.data.Cur_OfficialRate);
+    });
+  }, []);
 
-  const handleCurrencyChange = (currency) => {
-    dataApp.setCurrency(currency);
-  };
+  const handleCurrencyChange = (currency) => dataApp.setCurrency(currency);
 
   useEffect(() => {
-    // if (typeof window !== "undefined") {
-    const cartData = JSON.parse(localStorage.getItem("parts")) || [];
-    dataApp.setDataKorzina(cartData)
-    // }
+    const cartData = JSON.parse(localStorage.getItem('parts')) || [];
+    dataApp.setDataKorzina(cartData);
   }, [state, isState]);
 
-
- useEffect(() => {
-  getAllProducs()
-    .then(data => {
-      if (data) {
-        setProducts(data.serializedProducts)
-      }
-    })
-}, [isState])
-
-
-
+  useEffect(() => {
+    getAllProducs()
+      .then((arr) => setProducts(Array.isArray(arr) ? arr : []))
+      .catch(() => setProducts([]));
+  }, [isState]);
 
   return (
-    <MyContext.Provider value={{ state, products, updateIsState, isState, updateState, user, dataApp, handleCurrencyChange }}>
+    <MyContext.Provider
+      value={{ state, products, updateIsState, isState, updateState, user, dataApp, handleCurrencyChange }}
+    >
       {children}
     </MyContext.Provider>
   );

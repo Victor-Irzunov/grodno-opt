@@ -12,6 +12,7 @@ import BtnComp from "../btn/BtnComp";
 
 const Header = observer(() => {
 	const { dataApp, user, products } = useContext(MyContext);
+	console.log("🚀 🚀 🚀  _ products:", products)
 	const pathname = usePathname()
 	const [menuOpen, setMenuOpen] = useState(false);
 	const [menuOpen2, setMenuOpen2] = useState(false);
@@ -24,7 +25,16 @@ const Header = observer(() => {
 	const searchInputRef = useRef(null);
 	//   const [categories, setCategories] = useState([]);
 
-	const categories = Array.from(new Map(products.map(item => [item.category.id, { id: item.category.id, title: item.category.title }])).values());
+	const productList = Array.isArray(products) ? products : [];
+
+	// аккуратно собираем уникальные категории (если у товара есть category)
+	const categories = Array.from(
+		new Map(
+			productList
+				.filter(p => p?.category?.id && p?.category?.title)
+				.map(p => [p.category.id, { id: p.category.id, title: p.category.title }])
+		).values()
+	);
 
 
 	const getBasePath = (pathname) => {
@@ -440,7 +450,7 @@ const Header = observer(() => {
 							<Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/`}>
 								<Image
 									src={`/logo/logo.webp`}
-									alt='Логотип магазина техники Apple - яблоки бай (yabloki.by)'
+									alt='Логотип'
 									className="sd:w-[150px] xz:w-[100px] z-50"
 									width={150} height={150}
 								/>

@@ -1,71 +1,150 @@
-"use client"
-import { useState } from "react";
-import AddProductPrice from "../FormsAdmin/AddProductPrice"
+"use client";
+import { useEffect, useState } from "react";
 
 const ProductAdmin = () => {
-	const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [preview, setPreview] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [mode, setMode] = useState("receive"); // reprice | receive (ПО УМОЛЧАНИЮ — ПРИЁМКА)
+  const [fx, setFx] = useState("");
+  const [result, setResult] = useState(null);
 
-	return (
-		<div className="pt-10 px-12 text-white pb-24">
-			<p className='text-3xl mb-16'>
-				Добавить товар (прайс)
-			</p>
-			<AddProductPrice setData={setData} data={data} />
-			<div className='mt-20'>
+  async function loadPreview() {
+    setLoading(true);
+    setResult(null);
+    try {
+      const r = await fetch("/api/admin/price/preview", { cache: "no-store" });
+      const j = await r.json();
+      if (j?.ok) {
+        setPreview(j.items || []);
+        setTotal(j.total || 0);
+      } else {
+        setPreview([]);
+      }
+    } catch {
+      setPreview([]);
+    } finally {
+      setLoading(false);
+    }
+  }
 
-				{
-					Array.isArray(data) && data.length ? (
-						<table className="table-auto border-collapse border border-gray-600 text-xs">
-							<thead>
-								<tr>
-									{data[0].map((header, index) => (
-										<th key={index} className="border border-gray-500 p-2">
-											{header}
-										</th>
-									))}
-								</tr>
-							</thead>
-							<tbody>
-								{data.slice(1).map((row, rowIndex) => (
-									<tr key={rowIndex}>
-										{row.map((cell, cellIndex) => (
-											<td key={cellIndex} className="border border-gray-500 p-2">
-												{cell}
-											</td>
-										))}
-									</tr>
-								))}
-							</tbody>
-						</table>
-					) :
-						<div className={`${Object.keys(data).length ? 'hidden' : 'flex justify-center'}`}>
-							<button className="btn bg-transparent border-none text-white">
-								<span className="loading loading-spinner"></span>
-								загрузка ...
-							</button>
-						</div>
-				}
+  useEffect(() => { loadPreview(); }, []);
 
-				{
-					!Array.isArray(data) && Object.keys(data).length ?
-						<div className='mt-16 text-sm text-white/65'>
-							<p className=''>
-								Загружено: {data?.success?.length === 0 ? '0' : data?.success}
-							</p>
-							<p className=''>
-								Не загружено: {data?.missingProducts?.length === 0 ? '0' : data?.missingProducts}
-							</p>
-							<p className=''>
-								Ошибка: {data?.errors?.length === 0 ? '0' : data?.errors}
-							</p>
-						</div>
-						:
-						null
-				}
+  async function handleSync() {
+    try {
+      const payload = {
+        mode, // "receive" (прибавляем qty) | "reprice" (только цены/названия)
+        exchangeRate: fx ? parseFloat(fx) : null,
+      };
+      const r = await fetch("/api/admin/price/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const j = await r.json();
+      setResult(j);
+      if (j?.ok) {
+        alert(
+          `Режим: ${j.mode}\nСоздано: ${j.created}\nОбновлено: ${j.updated}\nПропущено: ${j.skipped}\nНедостаточно данных для создания (нет дефолтных ID): ${j.missingForCreate}\nПрибавлено на склад (шт): ${j.qtyIncreased}`
+        );
+      } else {
+        alert(`Ошибка: ${j?.error || "unknown"}`);
+      }
+    } catch (e) {
+      alert(`Ошибка: ${e.message}`);
+    }
+  }
 
-			</div>
-		</div>
-	)
-}
+  return (
+    <div className="pt-10 px-12 text-white pb-24">
+      <p className="text-3xl mb-6">Загрузить прайс</p>
 
-export default ProductAdmin
+      <div className="mb-4 flex flex-wrap items-end gap-4">
+        <div className="flex gap-2">
+          <button
+            className={`btn ${mode === "reprice" ? "btn-primary" : ""}`}
+            onClick={() => setMode("reprice")}
+            type="button"
+          >
+            Переоценка
+          </button>
+          <button
+            className={`btn ${mode === "receive" ? "btn-primary" : ""}`}
+            onClick={() => setMode("receive")}
+            type="button"
+          >
+            Приёмка (прибавить Количество)
+          </button>
+        </div>
+
+        <div>
+          <label className="block mb-2 text-sm opacity-80">Курс (опц., умножим цену)</label>
+          <input
+            type="number"
+            step="0.0001"
+            value={fx}
+            onChange={(e) => setFx(e.target.value)}
+            className="input input-bordered bg-transparent"
+            placeholder="1.0000"
+          />
+        </div>
+
+        <button onClick={handleSync} className="btn btn-success" type="button">
+          Синхронизировать
+        </button>
+
+        <button onClick={loadPreview} className="btn" type="button">
+          Обновить превью
+        </button>
+      </div>
+
+      <div className="mb-6 text-sm opacity-80">
+        <p>Всего позиций: {total}</p>
+        <p>Предпросмотр ограничен {process.env.NEXT_PUBLIC_PRICE_PREVIEW_MAX_ROWS || 500} строками.</p>
+        {result && result.ok && (
+          <div className="mt-2">
+            <span className="badge badge-outline mr-2">Создано: {result.created}</span>
+            <span className="badge badge-outline mr-2">Обновлено: {result.updated}</span>
+            <span className="badge badge-outline mr-2">Пропущено: {result.skipped}</span>
+            <span className="badge badge-outline mr-2">Недост. для создания: {result.missingForCreate}</span>
+            <span className="badge badge-outline">Прибавлено шт.: {result.qtyIncreased}</span>
+          </div>
+        )}
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center">
+          <button className="btn bg-transparent border-none text-white">
+            <span className="loading loading-spinner"></span>
+            загрузка превью ...
+          </button>
+        </div>
+      ) : Array.isArray(preview) && preview.length ? (
+        <div className="overflow-auto border border-gray-700 rounded-lg">
+          <table className="table table-xs">
+            <thead>
+              <tr>
+                {preview[0].map((h, i) => (
+                  <th key={i} className="whitespace-nowrap">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {preview.slice(1).map((row, rIdx) => (
+                <tr key={rIdx}>
+                  {row.map((cell, cIdx) => (
+                    <td key={cIdx} className="whitespace-nowrap">{String(cell ?? "")}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p className="opacity-80">Данных для превью нет.</p>
+      )}
+    </div>
+  );
+};
+
+export default ProductAdmin;

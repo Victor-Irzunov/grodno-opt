@@ -91,7 +91,7 @@ export default function SearchProductForm({ onPick }) {
         <Form.Item
           label={<span style={{ color: "white" }}>Поиск товара</span>}
           extra={
-            <span style={{ color: "rgba(255,255,255,0.6)" }}>
+            <span style={{ color: "white" }}>
               ID, артикул или начало названия — список обновляется сразу
             </span>
           }
