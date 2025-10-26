@@ -1,3 +1,4 @@
+-- my-app/prisma/migrations/20251026143019_init/migration.sql
 -- CreateTable
 CREATE TABLE `User` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
@@ -13,9 +14,9 @@ CREATE TABLE `User` (
 -- CreateTable
 CREATE TABLE `UserData` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `fullName` VARCHAR(191) NOT NULL DEFAULT '',
-    `address` VARCHAR(191) NOT NULL DEFAULT '',
-    `phone` VARCHAR(191) NOT NULL DEFAULT '',
+    `fullName` VARCHAR(191) NOT NULL,
+    `phone` VARCHAR(191) NOT NULL,
+    `address` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `userId` INTEGER NOT NULL,
@@ -39,11 +40,12 @@ CREATE TABLE `Category` (
 CREATE TABLE `Group` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `title` VARCHAR(191) NOT NULL,
-    `categoryId` INTEGER NOT NULL,
-    `discount` DECIMAL(5, 2) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
+    `categoryId` INTEGER NOT NULL,
+    `discount` DECIMAL(5, 2) NULL,
 
+    INDEX `idx_group_title`(`title`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -61,8 +63,12 @@ CREATE TABLE `Product` (
     `categoryId` INTEGER NOT NULL,
     `isDeleted` BOOLEAN NOT NULL DEFAULT false,
     `images` JSON NULL,
+    `description` TEXT NULL,
 
     UNIQUE INDEX `Product_article_key`(`article`),
+    INDEX `idx_product_title`(`title`),
+    INDEX `idx_product_categoryId`(`categoryId`),
+    INDEX `idx_product_groupId`(`groupId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -160,7 +166,7 @@ CREATE TABLE `ReturnItem` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `returnId` INTEGER NOT NULL,
     `productId` INTEGER NOT NULL,
-    `orderItemId` INTEGER NOT NULL,
+    `orderItemId` INTEGER NULL,
     `quantity` INTEGER NOT NULL,
     `refundAmount` DECIMAL(12, 2) NOT NULL,
 
@@ -176,6 +182,7 @@ CREATE TABLE `ContactRequest` (
     `message` VARCHAR(191) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `isViewed` BOOLEAN NOT NULL DEFAULT false,
+    `status` VARCHAR(191) NOT NULL DEFAULT 'Заявка',
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

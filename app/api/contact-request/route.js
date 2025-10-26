@@ -4,42 +4,19 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+/** Создание заявки (публичная форма). Всегда сохраняем со статусом "Заявка". */
 export async function POST(req) {
   try {
     const { name, phone, company, message } = await req.json();
     if (!name || !phone) {
-      return NextResponse.json({ error: "name, phone — обязательны" }, { status: 400 });
+      return NextResponse.json({ ok: false, error: "name и phone обязательны" }, { status: 400 });
     }
-
-    const item = await prisma.contactRequest.create({
-      data: { name, phone, company, message },
+    const created = await prisma.contactRequest.create({
+      data: { name, phone, company: company || null, message: message || null, status: "Заявка" },
     });
-
-    const token = process.env.TELEGRAM_BOT_TOKEN;
-    const chatId = process.env.TELEGRAM_CHAT_ID;
-
-    if (token && chatId) {
-      const text =
-        `📨 *Новая заявка на сотрудничество*\n` +
-        `*Имя:* ${escapeMd(name)}\n` +
-        `*Телефон:* ${escapeMd(phone)}\n` +
-        (company ? `*Компания:* ${escapeMd(company)}\n` : "") +
-        (message ? `*Сообщение:* ${escapeMd(message)}\n` : "") +
-        `*Время:* ${new Date().toLocaleString("ru-RU")}`;
-
-      await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chat_id: chatId, text, parse_mode: "Markdown" }),
-      }).catch(() => {});
-    }
-
-    return NextResponse.json({ ok: true, id: item.id });
-  } catch {
-    return NextResponse.json({ error: "server_error" }, { status: 500 });
+    return NextResponse.json({ ok: true, id: created.id }, { status: 200 });
+  } catch (e) {
+    console.error("contact-request POST error:", e);
+    return NextResponse.json({ ok: false, error: "server_error" }, { status: 500 });
   }
-}
-
-function escapeMd(s) {
-  return s.replace(/([_*[\]()~`>#+\-=|{}.!\\])/g, "\\$1");
 }

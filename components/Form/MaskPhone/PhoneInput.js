@@ -34,7 +34,7 @@ const PhoneInput = ({ value, onChange, setAlertText, setAlertActive, bg }) => {
 			value={value}
 			onChange={handleChange}
 			placeholder="+375 xx xxx-xx-xx"
-			className={`input input-bordered input-md ${bg ? 'bg-primary' : ''}`}
+			className={`input input-bordered input-md ${bg ? 'bg-primary' : ''} w-full`}
 			required
 		/>
 	);

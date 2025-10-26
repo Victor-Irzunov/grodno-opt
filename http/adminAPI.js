@@ -1,3 +1,4 @@
+// my-app/http/adminAPI.js
 import { $authHost, $host } from "./index"
 import { normalizeProducts } from '@/lib/normalizeProduct';
 

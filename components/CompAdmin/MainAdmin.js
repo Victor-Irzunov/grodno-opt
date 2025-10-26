@@ -1,9 +1,11 @@
+// my-app/components/CompAdmin/MainAdmin.js
 import { MyContext } from '@/contexts/MyContextProvider'
 import { Button, Modal, Popconfirm, message } from 'antd'
-import { useContext, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import EditProductForm from '../FormsAdmin/EditProductForm'
 import { observer } from 'mobx-react-lite'
+import { notification } from "antd";
 
 const MainAdmin = observer(() => {
 	const { products, updateIsState } = useContext(MyContext)
@@ -12,6 +14,24 @@ const MainAdmin = observer(() => {
 	const [sortAsc, setSortAsc] = useState(false)
 	const [editModalOpen, setEditModalOpen] = useState(false)
 	const [currentProduct, setCurrentProduct] = useState(null)
+	const [api, contextHolder] = notification.useNotification();
+
+	useEffect(() => {
+		(async () => {
+			try {
+				const res = await fetch("/api/admin/contact-request?onlyNew=1", { cache: "no-store" });
+				const { count } = await res.json();
+				if (count > 0) {
+					api.open({
+						message: "Новые заявки на сотрудничество",
+						description: `Количество новых заявок: ${count}. Откройте раздел «Заявки на сотрудничество», чтобы обработать.`,
+						duration: 0, // пока админ не закроет
+					});
+				}
+			} catch { }
+		})();
+	}, [api]);
+
 
 	// фильтруем только активные (неудалённые) товары
 	const activeProducts = useMemo(() => {
@@ -79,6 +99,8 @@ const MainAdmin = observer(() => {
 	return (
 		<div className="pt-10 px-12 text-white">
 			<p className="text-3xl mb-10">Главная</p>
+
+			{contextHolder}
 
 			{/* Фильтры */}
 			<div className="mb-4 flex flex-wrap items-center gap-4">

@@ -9,10 +9,10 @@ const Modal = ({ selectedProduct, closeModal, isFormSubmitted, setIsFormSubmitte
 					<div className="modal-box bg-white">
 						<p className="font-semibold text-black text-lg">{selectedProduct ? `${selectedProduct}` : 'Заказать звонок'}</p>
 						<p className="py-1 mt-3 sd:text-sm xz:text-xs text-gray-600">
-							Пожалуйста, заполните форму, и менеджер свяжется с вами в ближайшее время.
+							Пожалуйста, заполните форму, и администратор свяжется с вами в ближайшее время.
 						</p>
 						<form method="dialog">
-							<button className="btn btn-lg btn-circle btn-ghost text-black absolute right-0 top-0">✕</button>
+							<button className="btn btn-lg btn-circle bg-red-200 btn-ghost text-black absolute right-0 top-0">✕</button>
 						</form>
 						<FormOrder
 							selectedProduct={selectedProduct}
@@ -25,7 +25,7 @@ const Modal = ({ selectedProduct, closeModal, isFormSubmitted, setIsFormSubmitte
 				:
 				(
 					<div className="modal-box">
-						<p className="text-xl text-black">Ваш заказ успешно отправлен!</p>
+						<p className="text-xl text-black">Ваша заявка на регистрацию принята, с вами свяжется администратор для подтверждения учетной записи!</p>
 					</div>
 				)
 			}

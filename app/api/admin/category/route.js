@@ -1,3 +1,4 @@
+// my-app/app/api/admin/category/route.js
 import { PrismaClient } from '@prisma/client';
 import { NextResponse } from 'next/server';
 

@@ -17,6 +17,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
+
 function Page() {
   const [activeComponent, setActiveComponent] = useState("main");
 
@@ -49,6 +50,8 @@ function Page() {
                 <Image src="/logo/logo-blue.webp" alt="Логотип" width={150} height={150} />
               </Link>
             </div>
+
+           
 
             <div className='my-8'>
               <Link href='/' className="text-blue-500">
@@ -164,7 +167,7 @@ function Page() {
 
               <li onClick={() => setActiveComponent("contactRequests")}
                 className={`flex space-x-3 items-center hover:bg-[#191919] py-2 px-3 rounded-md ${activeComponent === "contactRequests" ? "border border-primary rounded-md py-2 px-2.5 text-primary bg-[#317bff1a]" : ""}`}>
-                <Image src="/svg/main.svg" alt="Заявки" width={20} height={20} />
+                <Image src="/svg/user-plus.svg" alt="Заявки" width={20} height={20} />
                 <p>Заявки на сотрудничество</p>
               </li>
             </ul>

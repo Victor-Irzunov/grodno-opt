@@ -17,6 +17,7 @@ export async function GET() {
 			},
 		
 		});
+	
 		
 
 		const products = data.map((p) => ({
