@@ -1,12 +1,16 @@
 // /app/catalog/[kategoriya]/[title]/[article]/page.js — ФАЙЛ ПОЛНОСТЬЮ
 import OneProductPage from '@/components/OneProductPage/OneProductPage';
-import { prisma } from '@/lib/prisma'; // если у тебя другой путь — оставь как было
-// Если у тебя были свои функции getData/getData2 — см. ниже: я их сохранил
+import { prisma } from '@/lib/prisma';
+import { plainify } from '@/lib/plainify';
 
+// Prisma нужен Node runtime
+export const runtime = 'nodejs';
+
+// ====== DATA LAYER ======
 async function getData(article) {
-  // оставь свою реализацию; пример через Prisma:
+  if (!article) return null;
   const product = await prisma.product.findFirst({
-    where: { article },
+    where: { article: decodeURIComponent(article) },
     include: {
       category: true,
       group: true,
@@ -16,16 +20,14 @@ async function getData(article) {
 }
 
 async function getData2() {
-  // оставь свою реализацию; пример:
   const products = await prisma.product.findMany({
     include: { category: true, group: true },
-    take: 500, // чтобы не грелось, можно убрать
+    take: 500,
   });
   return products;
 }
 
 async function getCategories() {
-  // оставь свою реализацию; пример:
   const categories = await prisma.category.findMany({
     include: { groups: true },
     orderBy: { title: 'asc' },
@@ -33,43 +35,99 @@ async function getCategories() {
   return categories;
 }
 
-// МЕТАДАННЫЕ – теперь ждём params
+// ====== SEO / METADATA ======
 export async function generateMetadata({ params }) {
-  const { kategoriya, title, article } = await params;
+  const { kategoriya, title, article } = params || {};
 
-  const data = await getData(article);
+  const product = await getData(article);
 
-  let title1;
-  let description1;
+  const metaTitle = product
+    ? `${product.title} (${product.article}) — купить оптом`
+    : `${decodeURIComponent(title || '')} — товар`;
 
-  if (data) {
-    title1 = `${data.title} (${data.article}) — купить оптом`;
-    description1 =
-      data.description?.slice(0, 160) ||
-      `Купить ${data.title} (${data.article}) оптом. В наличии: ${data.count > 0 ? 'да' : 'нет'}.`;
-  } else {
-    title1 = `${title} — товар`;
-    description1 = `Страница товара ${title}.`;
+  const metaDescription = product
+    ? (product.description?.slice(0, 160) ||
+      `Купить ${product.title} (${product.article}) оптом. В наличии: ${product.count > 0 ? 'да' : 'нет'}.`)
+    : `Страница товара ${decodeURIComponent(title || '')}.`;
+
+  const canonical = `/catalog/${encodeURIComponent(kategoriya || '')}/${encodeURIComponent(title || '')}/${encodeURIComponent(article || '')}`;
+
+  // Подготовим изображения для OG/Twitter (если есть)
+  const ogImages = [];
+  if (product?.images) {
+    // images может быть массивом строк или объектами — берём только валидные URL-строки
+    try {
+      const arr = Array.isArray(product.images) ? product.images : [];
+      for (const it of arr) {
+        if (typeof it === 'string' && it.startsWith('http')) ogImages.push(it);
+        if (it && typeof it === 'object' && typeof it.url === 'string' && it.url.startsWith('http')) {
+          ogImages.push(it.url);
+        }
+      }
+    } catch (_) {
+      // молча игнорим
+    }
   }
 
+  // JSON-LD для AEO/SEO
+  const jsonLd = product
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: product.title,
+        sku: product.article,
+        category: product?.category?.title || undefined,
+        description: product?.description || undefined,
+        offers: {
+          '@type': 'Offer',
+          availability: product.count > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+          priceCurrency: 'BYN',
+          // Если выведешь цену в JSON-LD: раскомментируй и убедись, что это строка или число
+          // price: product.price?.toString?.() ?? undefined,
+        },
+        image: ogImages.length ? ogImages : undefined,
+      }
+    : null;
+
   return {
-    title: title1,
-    description: description1,
-    alternates: {
-      canonical: `/catalog/${kategoriya}/${title}/${article}`,
+    title: metaTitle,
+    description: metaDescription,
+    alternates: { canonical },
+    openGraph: {
+      title: metaTitle,
+      description: metaDescription,
+      url: canonical,
+      type: 'website',              // ← фикс: 'product' недопустим в Next metadata
+      images: ogImages.length ? ogImages : undefined,
     },
+    twitter: {
+      card: 'summary_large_image',
+      title: metaTitle,
+      description: metaDescription,
+      images: ogImages.length ? ogImages : undefined,
+    },
+    // Складываем JSON-LD в meta name через 'other'
+    // (для Product это ок, поисковики читают <script type="application/ld+json">,
+    // его ты можешь добавить в компоненте через <Script id="ld" type="application/ld+json">{...}</Script>
+    // Если хочешь именно <script> — перенесу в layout или в саму страницу.)
+    other: jsonLd ? { 'script:ld+json': JSON.stringify(jsonLd) } : {},
   };
 }
 
-// СТРАНИЦА – тоже ждём params
+// ====== PAGE ======
 export default async function Page({ params }) {
-  const { article } = await params;
+  const { article } = params || {};
 
-  const [data, dataAllProduct, categories] = await Promise.all([
+  const [rawProduct, rawProducts, rawCategories] = await Promise.all([
     getData(article),
     getData2(),
     getCategories(),
   ]);
+
+  // Приводим все сложные типы к plain JS, чтобы клиентские компоненты не падали
+  const data = plainify(rawProduct, { decimal: 'number' });
+  const dataAllProduct = plainify(rawProducts, { decimal: 'number' });
+  const categories = plainify(rawCategories, { decimal: 'number' });
 
   return (
     <OneProductPage
