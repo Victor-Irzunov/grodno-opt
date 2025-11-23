@@ -42,7 +42,7 @@ const page = () => {
                 <h2 className="font-semibold sd:text-xl xz:text-base">Доступные варианты оплаты</h2>
                 <ul className="list-disc pl-5 space-y-3 mt-4">
                   <li>
-                    <span className="font-medium">Наличный расчёт.</span> Оплата при получении в Минске и пригороде,
+                    <span className="font-medium">Наличный расчёт.</span> Оплата при получении в Гродно и пригороде,
                     при доставке курьером или самовывозе.
                   </li>
                   <li>

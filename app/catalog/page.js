@@ -14,7 +14,7 @@ async function getData() {
         group: true,
       },
     });
-    console.log("🚀 🚀 🚀  _ getData _ data:", data)
+
 
     const serializedProducts = data.map((product) => ({
       ...product,

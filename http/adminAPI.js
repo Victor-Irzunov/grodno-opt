@@ -157,3 +157,21 @@ export const GetGoogle = async () => {
 
 
 
+export const getAllReturns = async (status = 'pending') => {
+  // status: 'pending' | 'approved' | 'rejected' | 'all'
+  const query =
+    status && status !== 'all'
+      ? `?status=${encodeURIComponent(status)}`
+      : '';
+  const { data } = await $authHost.get(`/api/admin/returns${query}`);
+  return data;
+};
+
+export const updateReturnStatus = async ({ returnId, action }) => {
+  // action: 'approve' | 'reject'
+  const { data } = await $authHost.patch('/api/admin/returns', {
+    returnId,
+    action,
+  });
+  return data;
+};

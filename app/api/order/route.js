@@ -1,3 +1,4 @@
+// /app/api/order/route.js
 import { PrismaClient } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
@@ -58,10 +59,6 @@ export async function DELETE(req) {
   }
 }
 
-
-
-
-
 export async function POST(req) {
   try {
     const body = await req.json();
@@ -119,6 +116,8 @@ export async function POST(req) {
           buyerId: buyer.id,
           totalAmount,
           message,
+          // status по умолчанию: "В ожидании"
+          // deliveryStatus по умолчанию: "В обработке"
           shippingInfo: deliveryMethod !== 'Самовывоз Космонавтов 9, каб 3' ? {
             create: {
               courier: deliveryMethod,
@@ -194,7 +193,7 @@ export async function GET(req) {
   try {
     const dataOrders = await prisma.order.findMany({
       where: {
-        status: "pending",
+        status: "В ожидании", // было: "pending"
       },
       include: {
         orderItems: {

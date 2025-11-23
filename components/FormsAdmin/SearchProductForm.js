@@ -100,6 +100,7 @@ export default function SearchProductForm({ onPick }) {
             ref={inputRef}
             allowClear
             value={q}
+            className="white-placeholder"
             onChange={(e) => setQ(e.target.value)}
             placeholder="Например: 125  |  A12-34  |  Дисплей iPhone"
             style={{ backgroundColor: "#191919", color: "white", width: 420 }}

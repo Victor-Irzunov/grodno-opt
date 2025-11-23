@@ -1,3 +1,4 @@
+// my-app/app/api/admin/product/route.js
 import { PrismaClient } from '@prisma/client';
 import { google } from 'googleapis';
 import { NextResponse } from 'next/server';

@@ -38,7 +38,7 @@ const RegistrationForm = ({ setIsActive, search }) => {
             } else {
               router.push("/moj-kabinet");
             }
-          }, 1500);
+          }, 1000);
         }
       })
       .catch(() => {

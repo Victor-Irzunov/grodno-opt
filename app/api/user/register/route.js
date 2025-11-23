@@ -12,7 +12,8 @@ export async function POST(req) {
     const {
       email,
       password,
-      // эти поля могут приходить, но не обязательны при регистрации
+      // опционально можем прислать discount/limit,
+      // но если нет — ставим 0
       discount,
       limit,
       isAdmin = false,
@@ -22,13 +23,12 @@ export async function POST(req) {
       return new NextResponse('Email и пароль обязательны', { status: 400 });
     }
 
-    // уже есть пользователь с таким email?
     const userExists = await prisma.user.findFirst({ where: { email } });
     if (userExists) {
       return new NextResponse('Пользователь уже зарегистрирован в системе', { status: 409 });
     }
 
-    // Защита: не позволяем создать второго администратора
+    // защита от второго админа
     if (isAdmin) {
       const adminExists = await prisma.user.findFirst({ where: { isAdmin: true } });
       if (adminExists) {
@@ -38,26 +38,36 @@ export async function POST(req) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Вариант A — создаём пустой userData, поля возьмут дефолты из БД
+    // создаём пользователя + пустой userData
     const userDB = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
         isAdmin,
-        userData: { create: {} }, // fullName/address/phone заполнятся @default("")
+        userData: {
+          create: {
+            fullName: '',
+            phone: '',
+            address: '',
+          },
+        },
       },
     });
 
-    // Если переданы параметры для оптовика — создаём запись
-    if (discount !== undefined && limit !== undefined) {
-      await prisma.wholesaleBuyer.create({
-        data: {
-          userId: userDB.id,
-          discount,
-          balance: 0.0,
-          limit,
-        },
-      });
+    // ВАЖНО: всегда создаём WholesaleBuyer
+    await prisma.wholesaleBuyer.create({
+      data: {
+        userId: userDB.id,
+        balance: 0.0,
+        debt: 0.0,
+        discount: discount ?? 0.0,
+        limit: limit ?? 0.0,
+      },
+    });
+
+    if (!process.env.SECRET_KEY) {
+      console.error('SECRET_KEY не задан в .env');
+      return new NextResponse('Ошибка конфигурации сервера', { status: 500 });
     }
 
     const token = jwt.sign(
@@ -68,7 +78,6 @@ export async function POST(req) {
 
     return NextResponse.json({ token }, { status: 200 });
   } catch (error) {
-    // Ловим частые ошибки (например, уникальный email)
     if (error.code === 'P2002') {
       return new NextResponse('Пользователь с таким email уже существует', { status: 409 });
     }

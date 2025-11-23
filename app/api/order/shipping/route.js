@@ -1,4 +1,4 @@
-// /api/admin/orders/shipping
+// /app/api/order/shipping/route.js
 import { PrismaClient } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
@@ -7,14 +7,81 @@ const prisma = new PrismaClient();
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { orderId, courier, trackingNumber, address, deliveryCost, status, items } = body;
-    if (!orderId || !courier || !address || !status || !items) {
+    const {
+      orderId,
+      courier,
+      trackingNumber,
+      address,
+      deliveryCost,
+      status,
+      items,
+    } = body;
+
+    if (
+      !orderId ||
+      !courier ||
+      !status ||
+      !items ||
+      !Array.isArray(items) ||
+      items.length === 0
+    ) {
       return NextResponse.json({ message: 'Некорректные данные' }, { status: 400 });
     }
-    const updateItems = items.map(item =>
+
+    // для не-Самовывоз адрес обязателен
+    if (courier !== 'Самовывоз' && (!address || !String(address).trim())) {
+      return NextResponse.json(
+        { message: 'Адрес доставки обязателен для выбранного способа доставки' },
+        { status: 400 }
+      );
+    }
+
+    const safeAddress =
+      courier === 'Самовывоз'
+        ? (address && String(address).trim()) || 'Самовывоз Космонавтов 9, каб 3'
+        : address;
+
+    // нормализуем позиции: количество, цена, статус
+    const normalizedItems = items.map((item) => {
+      const qty =
+        typeof item.quantity === 'number'
+          ? item.quantity
+          : parseInt(item.quantity, 10) || 0;
+
+      const price =
+        typeof item.price === 'number'
+          ? item.price
+          : parseFloat(item.price) || 0;
+
+      const st = item.status || 'Ожидание';
+
+      return {
+        id: item.id,
+        quantity: qty < 0 ? 0 : qty,
+        price,
+        status: st,
+      };
+    });
+
+    // пересчитываем сумму заказа
+    const refusedStatuses = ['отказано', 'отказ', 'отсутствует на складе'];
+    const totalAmount = normalizedItems.reduce((sum, item) => {
+      const statusLower = String(item.status).toLowerCase();
+      const isRefused = refusedStatuses.some((s) =>
+        statusLower.includes(s)
+      );
+      const effectiveQty = isRefused ? 0 : item.quantity;
+      return sum + effectiveQty * item.price;
+    }, 0);
+
+    const updateItems = normalizedItems.map((item) =>
       prisma.orderItem.update({
         where: { id: item.id },
-        data: { price: item.price },
+        data: {
+          price: item.price,
+          quantity: item.quantity,
+          status: item.status,
+        },
       })
     );
 
@@ -23,17 +90,19 @@ export async function POST(req) {
       prisma.order.update({
         where: { id: orderId },
         data: {
-          deliveryStatus: status,
-          deliveryCost: deliveryCost ? parseFloat(deliveryCost) : undefined,
+          deliveryStatus: status, // "Отправлен" или "Завершён"
+          deliveryCost: deliveryCost ? parseFloat(deliveryCost) : null,
+          totalAmount: totalAmount.toFixed(2),
           shippingInfo: {
             upsert: {
-              update: { courier, trackingNumber, address },
-              create: { courier, trackingNumber, address },
+              update: { courier, trackingNumber, address: safeAddress },
+              create: { courier, trackingNumber, address: safeAddress },
             },
           },
         },
       }),
     ]);
+
     return NextResponse.json({ message: 'Информация о доставке обновлена' });
   } catch (error) {
     console.error('Ошибка обновления доставки:', error);
@@ -117,8 +186,8 @@ export async function PATCH(req) {
       prisma.order.update({
         where: { id: orderId },
         data: {
-          status: 'completed',
-          deliveryStatus: 'completed',
+          status: 'Завершён',
+          deliveryStatus: 'Завершён',
         },
       }),
       prisma.wholesaleBuyer.update({
@@ -137,4 +206,3 @@ export async function PATCH(req) {
     return NextResponse.json({ message: 'Ошибка сервера' }, { status: 500 });
   }
 }
-

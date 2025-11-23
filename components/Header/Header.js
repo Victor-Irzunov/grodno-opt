@@ -12,7 +12,6 @@ import BtnComp from "../btn/BtnComp";
 
 const Header = observer(() => {
 	const { dataApp, user, products } = useContext(MyContext);
-	console.log("🚀 🚀 🚀  _ products:", products)
 	const pathname = usePathname()
 	const [menuOpen, setMenuOpen] = useState(false);
 	const [menuOpen2, setMenuOpen2] = useState(false);

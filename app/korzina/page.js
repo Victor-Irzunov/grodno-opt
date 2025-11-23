@@ -47,10 +47,8 @@ export default function Cart() {
 						<UserCart data={data} setData={setData} />
 					</div>
 					:
-					<div className="min-h-screen pt-16">
-						<div className="flex justify-center">
-							<Image src='/images/empty.webp' alt='Пустая корзина' className="sd:w-1/3 xz:w-2/3" width={800} height={600} />
-						</div>
+					<div className="min-h-screen pt-40">
+						
 						<div className="text-center mt-5">
 							<h1 className="mb-5 text-3xl font-bold uppercase">Пусто</h1>
 							<p className="mb-5 text-gray-600 text-sm">
