@@ -32,7 +32,7 @@ export default function LoginRegistrationClient() {
               <button
                 className={`px-4 py-2 rounded-md text-sm font-medium transition ${
                   tab === "login"
-                    ? "bg-primary text-white"
+                    ? "bg-blue-500 text-base"
                     : "bg-base-200 text-base-content hover:bg-base-300"
                 }`}
                 onClick={() => setTab("login")}
@@ -52,7 +52,7 @@ export default function LoginRegistrationClient() {
               <button
                 className={`px-4 py-2 rounded-md text-sm font-medium transition ${
                   tab === "partner"
-                    ? "bg-primary text-white"
+                    ? "bg-blue-500 text-white"
                     : "bg-base-200 text-base-content hover:bg-base-300"
                 }`}
                 onClick={() => setTab("partner")}
