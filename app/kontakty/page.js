@@ -15,12 +15,12 @@ export default function Page() {
           <div className="mt-8 grid sd:grid-cols-2 xz:grid-cols-1 gap-8">
             <div className="space-y-3">
               <p className="text-sm text-gray-500">Телефон:</p>
-              <a
+              {/* <a
                 href={`tel:${phoneNumbers.mainPhoneLink}`}
                 className="btn sd:bg-black xz:bg-black sd:text-white xz:text-white border-none rounded-sm font-light w-fit"
               >
                 {phoneNumbers.mainPhone}
-              </a>
+              </a> */}
 
               <div className="divider"></div>
 

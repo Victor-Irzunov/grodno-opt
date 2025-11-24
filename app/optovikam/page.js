@@ -74,11 +74,11 @@ const page = () => {
 
 
 
-              <div className='mt-6 font-bold'>
+              {/* <div className='mt-6 font-bold'>
                 Звоните: 	<a href={`tel:${phoneNumbers.mainPhoneLink}`} className={``}>
                   {phoneNumbers.mainPhone}
                 </a>
-              </div>
+              </div> */}
             </div>
 
           </div>

@@ -84,9 +84,9 @@ const page = () => {
                 <h3 className="font-semibold sd:text-lg xz:text-base">Есть вопросы по оплате?</h3>
                 <p className="mt-3">
                   Свяжитесь с нами: <br />
-                  <a href={`tel:${phoneNumbers.mainPhoneLink}`} className="link link-primary">
+                  {/* <a href={`tel:${phoneNumbers.mainPhoneLink}`} className="link link-primary">
                     {phoneNumbers.mainPhone}
-                  </a>
+                  </a> */}
                  
                 </p>
                 <p className="mt-2 text-gray-600">

@@ -35,11 +35,11 @@ export default function Home() {
 
             <div className='mt-8 flex sd:flex-row xz:flex-col items-center sd:space-x-3 xz:space-x-0 sd:space-y-0 xz:space-y-3'>
 
-              <a href={`tel:${phoneNumbers.mainPhoneLink}`} className="btn sd:bg-white xz:bg-black sd:text-black xz:text-white border-none rounded-sm font-light sd:w-auto xz:w-full">
+              {/* <a href={`tel:${phoneNumbers.mainPhoneLink}`} className="btn sd:bg-white xz:bg-black sd:text-black xz:text-white border-none rounded-sm font-light sd:w-auto xz:w-full">
                 <Image src='/svg/phone-black.svg' alt='Телефон для заказа оптом запчастей' width={20} height={20} className='sd:block xz:hidden' />
                 <Image src='/svg/phone-white.svg' alt='Телефон для заказа оптом запчастей' width={20} height={20} className='sd:hidden xz:block' />
                 {phoneNumbers.mainPhone}
-              </a>
+              </a> */}
 
 
               <div className='w-full'>

@@ -144,10 +144,10 @@ const Header = observer(() => {
 
 					<div className='flex xz:justify-between sd:justify-end items-center space-x-3'>
 
-						<a href={`tel:${phoneNumbers.mainPhoneLink}`} className={`sd:flex xz:hidden btn btn-xs sd:bg-white xz:bg-transparent sd:text-black xz:text-white border-none rounded-sm xz:text-[10px] sd:text-xs font-light`}>
+						{/* <a href={`tel:${phoneNumbers.mainPhoneLink}`} className={`sd:flex xz:hidden btn btn-xs sd:bg-white xz:bg-transparent sd:text-black xz:text-white border-none rounded-sm xz:text-[10px] sd:text-xs font-light`}>
 							<Image src='/svg/phone-black.svg' alt='Телефон' width={18} height={18} />
 							{phoneNumbers.mainPhone}
-						</a>
+						</a> */}
 
 						<div className={`${pathname === '/' ? 'sd:flex xz:hidden' : 'sd:hidden xz:hidden'}`}>
 							<BtnComp title='Купить оптом' red index={358} />
