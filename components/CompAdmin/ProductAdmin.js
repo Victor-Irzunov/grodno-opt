@@ -188,7 +188,7 @@ const ProductAdmin = () => {
           Синхронизировать (приёмка)
         </button>
 
-        <button onClick={loadPreview} className="btn" type="button">
+        <button onClick={loadPreview} className="btn btn-success" type="button">
           Обновить превью
         </button>
       </div>
