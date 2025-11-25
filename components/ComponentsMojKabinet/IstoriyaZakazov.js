@@ -22,6 +22,7 @@ const IstoriyaZakazov = ({ data, setActiveComponent }) => {
   const [quantity, setQuantity] = useState(1);
 
   const [openOrderId, setOpenOrderId] = useState(null);
+  const [sortOrder, setSortOrder] = useState("new"); // "new" | "old"
 
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -89,18 +90,62 @@ const IstoriyaZakazov = ({ data, setActiveComponent }) => {
     setOpenOrderId((prev) => (prev === orderId ? null : orderId));
   };
 
+  // сортировка заказов: "Новые" / "Старые"
+  const sortedOrders = [...orders].sort((a, b) => {
+    const dateA = new Date(a.createdAt).getTime();
+    const dateB = new Date(b.createdAt).getTime();
+    if (sortOrder === "new") {
+      // сначала новые
+      return dateB - dateA;
+    }
+    // сначала старые
+    return dateA - dateB;
+  });
+
   return (
     <>
       {contextHolder}
 
       <div className="pt-10">
-        <h3 className="sd:text-2xl xz:text-xl font-semibold mb-6">
-          {orders.length > 0 ? "История заказов" : "История заказов отсутствует"}
-        </h3>
+        <div className="flex justify-between items-center gap-4 mb-6">
+          <h3 className="sd:text-2xl xz:text-xl font-semibold">
+            {orders.length > 0
+              ? "История заказов"
+              : "История заказов отсутствует"}
+          </h3>
 
-        {orders.length > 0 ? (
+          {orders.length > 0 && (
+            <div className="flex items-center gap-2 text-xs sd:text-sm">
+              <span className="text-gray-500">Сортировка:</span>
+              <button
+                type="button"
+                onClick={() => setSortOrder("new")}
+                className={`px-3 py-1 border rounded-sm transition-colors ${
+                  sortOrder === "new"
+                    ? "bg-primary text-white border-primary"
+                    : "bg-white text-gray-700 border-gray-300 hover:bg-slate-50"
+                }`}
+              >
+                Новые
+              </button>
+              <button
+                type="button"
+                onClick={() => setSortOrder("old")}
+                className={`px-3 py-1 border rounded-sm transition-colors ${
+                  sortOrder === "old"
+                    ? "bg-primary text-white border-primary"
+                    : "bg-white text-gray-700 border-gray-300 hover:bg-slate-50"
+                }`}
+              >
+                Старые
+              </button>
+            </div>
+          )}
+        </div>
+
+        {sortedOrders.length > 0 ? (
           <div className="flex flex-col gap-4">
-            {orders.map((order) => {
+            {sortedOrders.map((order) => {
               const itemsTotal = Number(order.totalAmount || 0);
               const delivery = Number(order.deliveryCost || 0);
               const fullTotal = itemsTotal + delivery;
@@ -230,8 +275,8 @@ const IstoriyaZakazov = ({ data, setActiveComponent }) => {
                                   {item.product.title} — {item.quantity} шт.
                                 </span>
 
-                                {isOrderCompleted(order.status) && (
-                                  relatedReturn ? (
+                                {isOrderCompleted(order.status) &&
+                                  (relatedReturn ? (
                                     <span
                                       className={`text-xs ml-4 ${statusClass}`}
                                     >
@@ -244,8 +289,7 @@ const IstoriyaZakazov = ({ data, setActiveComponent }) => {
                                     >
                                       Возврат
                                     </button>
-                                  )
-                                )}
+                                  ))}
                               </li>
                             );
                           })}

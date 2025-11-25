@@ -1,11 +1,22 @@
 // /components/ComponentsMojKabinet/TekushchieZakazy.jsx
+import { useState } from "react";
 import Link from "next/link";
 
 const TekushchieZakazy = ({ data, setActiveComponent }) => {
+  const [openOrderId, setOpenOrderId] = useState(null);
+
+  // Берём текущие заказы (не completed) и сортируем: сначала новые, потом старые
   const orders =
-    data?.wholesaleBuyer?.orders?.filter(
-      (order) => order.status !== "completed"
-    ) || [];
+    data?.wholesaleBuyer?.orders
+      ?.filter((order) => order.status !== "completed")
+      ?.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      ) || [];
+
+  const toggleOrder = (orderId) => {
+    setOpenOrderId((prev) => (prev === orderId ? null : orderId));
+  };
 
   return (
     <div className="pt-10">
@@ -23,105 +34,150 @@ const TekushchieZakazy = ({ data, setActiveComponent }) => {
             const deliveryMethod =
               order.shippingInfo?.courier || "Самовывоз";
 
+            const isOpen = openOrderId === order.id;
+
             return (
-              <div key={order.id} className="border p-4 rounded-sm">
-                <div className="flex justify-between items-center mb-2">
-                  <h4 className="font-semibold text-lg">Заказ №{order.id}</h4>
-                  <span className="text-sm text-gray-500">
-                    {new Date(order.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-                <p className="text-sm mb-1">
-                  Статус:{" "}
-                  <span className="font-semibold">{order.status}</span>
-                </p>
-                <p className="text-sm mb-1">
-                  Статус доставки:{" "}
-                  <span className="font-semibold">
-                    {order.deliveryStatus}
-                  </span>
-                </p>
-                <p className="text-sm mb-1">
-                  Способ доставки:{" "}
-                  <span className="font-semibold">{deliveryMethod}</span>
-                </p>
-
-                {order.shippingInfo && (
-                  <p className="text-sm mb-1">
-                    Трек-номер:{" "}
-                    <span className="font-semibold">
-                      {order.shippingInfo.trackingNumber || "Нет"}
-                    </span>
-                  </p>
-                )}
-
-                <div className="mt-4 overflow-x-auto">
-                  <p className="text-sm font-semibold mb-2">Товары:</p>
-                  <table className="min-w-full text-sm border border-gray-300">
-                    <thead>
-                      <tr className="bg-gray-100 text-left sd:text-sm xz:text-[10px]">
-                        <th className="p-2 border border-gray-300">№</th>
-                        <th className="p-2 border border-gray-300">Название</th>
-                        <th className="p-2 border border-gray-300">Кол-во</th>
-                        <th className="p-2 border border-gray-300">
-                          Цена за шт.
-                        </th>
-                        <th className="p-2 border border-gray-300">Сумма</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {order.orderItems.map((item, index) => {
-                        const price = parseFloat(item.price);
-                        const quantity = item.quantity;
-                        const total = (price * quantity).toFixed(2);
-
-                        return (
-                          <tr
-                            key={item.id}
-                            className="border-t border-gray-300 sd:text-base xz:text-[10px]"
-                          >
-                            <td className="p-2 border border-gray-300">
-                              {index + 1}
-                            </td>
-                            <td className="p-2 border border-gray-300">
-                              {item.product.title}
-                            </td>
-                            <td className="p-2 border border-gray-300">
-                              {quantity}
-                            </td>
-                            <td className="p-2 border border-gray-300">
-                              {price} $
-                            </td>
-                            <td className="p-2 border border-gray-300">
-                              {total} $
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-
-                  <div className="mt-4 text-sm">
-                    <p className="mb-1">
-                      Сумма товаров:{" "}
+              <div
+                key={order.id}
+                className="border rounded-sm overflow-hidden"
+              >
+                {/* ШАПКА ЗАКАЗА (свернутый вид, по клику разворачиваем детали) */}
+                <button
+                  type="button"
+                  onClick={() => toggleOrder(order.id)}
+                  className="w-full text-left p-4 flex justify-between items-center bg-white hover:bg-slate-50 transition-colors"
+                >
+                  <div>
+                    <div className="flex items-center gap-3 mb-1">
+                      <h4 className="font-semibold text-lg">
+                        Заказ №{order.id}
+                      </h4>
+                      <span className="text-xs text-gray-500">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-xs sm:text-sm mb-1">
+                      Статус:{" "}
                       <span className="font-semibold">
-                        {itemsTotal.toFixed(2)} $
+                        {order.status}
                       </span>
                     </p>
-                    <p className="mb-1">
-                      Стоимость доставки:{" "}
+                    <p className="text-xs sm:text-sm mb-1">
+                      Статус доставки:{" "}
                       <span className="font-semibold">
-                        {delivery.toFixed(2)} $
+                        {order.deliveryStatus}
                       </span>
                     </p>
-                    <p className="mb-1 mt-2 font-bold">
-                      Итого к оплате:{" "}
+                    <p className="text-xs sm:text-sm">
+                      Способ доставки:{" "}
                       <span className="font-semibold">
-                        {totalWithDelivery.toFixed(2)} $
+                        {deliveryMethod}
                       </span>
                     </p>
                   </div>
-                </div>
+
+                  <div className="text-right">
+                    <p className="text-xs text-gray-500">Итого к оплате</p>
+                    <p className="text-sm sm:text-base font-bold">
+                      {totalWithDelivery.toFixed(2)} $
+                    </p>
+                    <span
+                      className={`inline-block mt-2 text-lg transform transition-transform ${
+                        isOpen ? "rotate-180" : ""
+                      }`}
+                    >
+                      ▾
+                    </span>
+                  </div>
+                </button>
+
+                {/* ДЕТАЛИ ЗАКАЗА (разворачиваются по клику) */}
+                {isOpen && (
+                  <div className="p-4 border-t border-gray-200">
+                    {order.shippingInfo && (
+                      <p className="text-sm mb-2">
+                        Трек-номер:{" "}
+                        <span className="font-semibold">
+                          {order.shippingInfo.trackingNumber || "Нет"}
+                        </span>
+                      </p>
+                    )}
+
+                    <div className="mt-2 overflow-x-auto">
+                      <p className="text-sm font-semibold mb-2">Товары:</p>
+                      <table className="min-w-full text-sm border border-gray-300">
+                        <thead>
+                          <tr className="bg-gray-100 text-left sd:text-sm xz:text-[10px]">
+                            <th className="p-2 border border-gray-300">№</th>
+                            <th className="p-2 border border-gray-300">
+                              Название
+                            </th>
+                            <th className="p-2 border border-gray-300">
+                              Кол-во
+                            </th>
+                            <th className="p-2 border border-gray-300">
+                              Цена за шт.
+                            </th>
+                            <th className="p-2 border border-gray-300">
+                              Сумма
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {order.orderItems.map((item, index) => {
+                            const price = parseFloat(item.price);
+                            const quantity = item.quantity;
+                            const total = (price * quantity).toFixed(2);
+
+                            return (
+                              <tr
+                                key={item.id}
+                                className="border-t border-gray-300 sd:text-base xz:text-[10px]"
+                              >
+                                <td className="p-2 border border-gray-300">
+                                  {index + 1}
+                                </td>
+                                <td className="p-2 border border-gray-300">
+                                  {item.product.title}
+                                </td>
+                                <td className="p-2 border border-gray-300">
+                                  {quantity}
+                                </td>
+                                <td className="p-2 border border-gray-300">
+                                  {price} $
+                                </td>
+                                <td className="p-2 border border-gray-300">
+                                  {total} $
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+
+                      <div className="mt-4 text-sm">
+                        <p className="mb-1">
+                          Сумма товаров:{" "}
+                          <span className="font-semibold">
+                            {itemsTotal.toFixed(2)} $
+                          </span>
+                        </p>
+                        <p className="mb-1">
+                          Стоимость доставки:{" "}
+                          <span className="font-semibold">
+                            {delivery.toFixed(2)} $
+                          </span>
+                        </p>
+                        <p className="mb-1 mt-2 font-bold">
+                          Итого к оплате:{" "}
+                          <span className="font-semibold">
+                            {totalWithDelivery.toFixed(2)} $
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}

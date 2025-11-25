@@ -107,10 +107,9 @@ const FormOrderKorzina2 = ({
 
         sendOrderTelegram(messageForm);
 
-        // 1) через 10 секунд очищаем корзину
-        // 2) ещё 10 секунд держим уведомление (итого ~20 сек после отправки)
-        const CLEAR_DELAY = 10000;
-        const HIDE_AFTER_CLEAR_DELAY = 10000;
+    
+        const CLEAR_DELAY = 3000;
+        const HIDE_AFTER_CLEAR_DELAY = 3000;
 
         setTimeout(() => {
           try {
@@ -128,7 +127,6 @@ const FormOrderKorzina2 = ({
             setData(null);
           }
 
-          // держим уведомление ещё 10 секунд после очистки
           setTimeout(() => {
             setSuccessActive(false);
           }, HIDE_AFTER_CLEAR_DELAY);
@@ -136,13 +134,13 @@ const FormOrderKorzina2 = ({
       } else {
         setErrorText("Ошибка отправки формы");
         setErrorActive(true);
-        setTimeout(() => setErrorActive(false), 4000);
+        setTimeout(() => setErrorActive(false), 3000);
       }
     } catch (err) {
       console.error("Ошибка отправки формы:", err);
       setErrorText("Ошибка отправки формы");
       setErrorActive(true);
-      setTimeout(() => setErrorActive(false), 4000);
+      setTimeout(() => setErrorActive(false), 3000);
     }
   };
 

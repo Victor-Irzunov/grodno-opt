@@ -1,6 +1,7 @@
 // /components/CompAdmin/ShippingPanel.jsx
 import { useState } from "react";
 import { Input, Select, Button, message } from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
 
 const { TextArea } = Input;
 
@@ -11,7 +12,13 @@ const STATUS_OPTIONS = [
   { value: "Отсутствует на складе", label: "Отсутствует на складе" },
 ];
 
-const ShippingPanel = ({ orderId, address, orderItems, onSuccess, onCancel }) => {
+const ShippingPanel = ({
+  orderId,
+  address,
+  orderItems,
+  onSuccess,
+  onCancel,
+}) => {
   const [courier, setCourier] = useState("");
   const [trackingNumber, setTrackingNumber] = useState("");
   const [deliveryCost, setDeliveryCost] = useState("");
@@ -34,7 +41,9 @@ const ShippingPanel = ({ orderId, address, orderItems, onSuccess, onCancel }) =>
     const num = parseFloat(value);
     setItems((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, price: isNaN(num) || num < 0 ? 0 : num } : item
+        item.id === id
+          ? { ...item, price: isNaN(num) || num < 0 ? 0 : num }
+          : item
       )
     );
   };
@@ -43,7 +52,9 @@ const ShippingPanel = ({ orderId, address, orderItems, onSuccess, onCancel }) =>
     const num = parseInt(value, 10);
     setItems((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, quantity: isNaN(num) || num < 0 ? 0 : num } : item
+        item.id === id
+          ? { ...item, quantity: isNaN(num) || num < 0 ? 0 : num }
+          : item
       )
     );
   };
@@ -54,6 +65,11 @@ const ShippingPanel = ({ orderId, address, orderItems, onSuccess, onCancel }) =>
         item.id === id ? { ...item, status: value } : item
       )
     );
+  };
+
+  // УДАЛЕНИЕ КОНКРЕТНОЙ ПОЗИЦИИ ИЗ ЗАКАЗА
+  const handleRemoveItem = (id) => {
+    setItems((prev) => prev.filter((item) => item.id !== id));
   };
 
   const handleShippingSubmit = async () => {
@@ -87,7 +103,7 @@ const ShippingPanel = ({ orderId, address, orderItems, onSuccess, onCancel }) =>
               ? "Самовывоз Космонавтов 9, каб 3"
               : shippingAddress,
           deliveryCost,
-          // для дальнейшей логики используем русские статусы
+          // для дальнейшей логики используем русские статусы доставки
           status: courier === "Самовывоз" ? "Завершён" : "Отправлен",
           items,
         }),
@@ -152,7 +168,9 @@ const ShippingPanel = ({ orderId, address, orderItems, onSuccess, onCancel }) =>
             placeholder="Город, улица, дом, отделение и т.д."
           />
 
-          <label className="block mb-2 mt-5 font-medium">Стоимость доставки ($)</label>
+          <label className="block mb-2 mt-5 font-medium">
+            Стоимость доставки ($)
+          </label>
           <Input
             type="number"
             className="mb-6"
@@ -172,6 +190,7 @@ const ShippingPanel = ({ orderId, address, orderItems, onSuccess, onCancel }) =>
               <th>Кол-во</th>
               <th>Цена $</th>
               <th>Статус</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -193,9 +212,7 @@ const ShippingPanel = ({ orderId, address, orderItems, onSuccess, onCancel }) =>
                     type="number"
                     min={0}
                     value={item.price}
-                    onChange={(e) =>
-                      handlePriceChange(item.id, e.target.value)
-                    }
+                    onChange={(e) => handlePriceChange(item.id, e.target.value)}
                   />
                 </td>
                 <td className="pr-2">
@@ -206,18 +223,29 @@ const ShippingPanel = ({ orderId, address, orderItems, onSuccess, onCancel }) =>
                     options={STATUS_OPTIONS}
                   />
                 </td>
+                <td className="pl-2">
+                  <Button
+                    type="text"
+                    danger
+                    onClick={() => handleRemoveItem(item.id)}
+                    aria-label="Удалить позицию"
+                  >
+                    <DeleteOutlined />
+                  </Button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
+      {/* ВСЕГДА: "Отмена" и "Отправить заказ" — способ доставки НЕ влияет на кнопки */}
       <div className="flex gap-4 justify-end">
         <Button loading={loading} onClick={onCancel}>
           Отмена
         </Button>
         <Button type="primary" loading={loading} onClick={handleShippingSubmit}>
-          {courier === "Самовывоз" ? "Завершить заказ" : "Отправить заказ"}
+          Отправить заказ
         </Button>
       </div>
     </div>

@@ -89,7 +89,7 @@ const Catalog = observer(({ data, searchParams }) => {
       : nameB.localeCompare(nameA);
   });
 
-  // Разбиение по группам (как в админке), но без смены светлой темы
+  // Разбиение по группам
   const groupedProducts = sortedProducts.reduce((acc, item) => {
     const groupTitle = item.group?.title || "Без группы";
     let group = acc.find((g) => g.groupTitle === groupTitle);
@@ -132,15 +132,19 @@ const Catalog = observer(({ data, searchParams }) => {
     const maxCount = item.count;
     const addingQuantity = quantities[item.id] || 1;
 
+    let addedNow = 0;
+
     if (existingItemIndex !== -1) {
       const existingQuantity = cart[existingItemIndex].quantity;
       const totalQuantity = Math.min(
         existingQuantity + addingQuantity,
         maxCount
       );
+      addedNow = totalQuantity - existingQuantity;
       cart[existingItemIndex].quantity = totalQuantity;
     } else {
       const quantityToAdd = Math.min(addingQuantity, maxCount);
+      addedNow = quantityToAdd;
       cart.push({
         ...item,
         price: discountedPrice.toFixed(2),
@@ -154,6 +158,8 @@ const Catalog = observer(({ data, searchParams }) => {
     setProd({
       ...item,
       discountedPrice: discountedPrice.toFixed(2),
+      // сколько фактически добавили сейчас (на этот клик)
+      addedQuantity: addedNow > 0 ? addedNow : addingQuantity,
     });
 
     modalRef.current?.showModal();
@@ -220,6 +226,26 @@ const Catalog = observer(({ data, searchParams }) => {
     }
     orderRef.current?.close();
   };
+
+  // Данные для модального окна "Товар добавлен в корзину"
+  const quantityInModal = prod?.addedQuantity || 1;
+  const unitPrice =
+    prod?.discountedPrice != null
+      ? Number(prod.discountedPrice)
+      : prod?.price != null
+      ? Number(prod.price)
+      : 0;
+  const totalForModal = unitPrice * quantityInModal;
+
+  const formattedUnitPrice =
+    dataApp.currency === "USD"
+      ? `$${unitPrice.toFixed(2)}`
+      : `${convertPrice(unitPrice)} BYN`;
+
+  const formattedTotalPrice =
+    dataApp.currency === "USD"
+      ? `$${totalForModal.toFixed(2)}`
+      : `${convertPrice(totalForModal)} BYN`;
 
   return (
     <section>
@@ -296,12 +322,11 @@ const Catalog = observer(({ data, searchParams }) => {
                                   el.title
                                 )}/${linkTransliterate(el.article)}/`}
                               >
-                                <p>
-                                  {el.title} ({el.article})
-                                </p>
+                                <p>{el.title}</p>
+                                {/* ({el.article}) */}
                               </Link>
 
-                              {/* СТРОКА: точка, статус и иконка изображения — всё в один ряд */}
+                              {/* СТРОКА: точка, статус и иконка изображения */}
                               <div
                                 className={`mt-1 flex items-center gap-2 ${
                                   el.count > 0
@@ -465,14 +490,16 @@ const Catalog = observer(({ data, searchParams }) => {
         </div>
       )}
 
+      {/* Модалка добавления в корзину с таблицей: название / кол-во / цена / сумма */}
       <dialog ref={modalRef} id="my_modal_1" className="modal">
         <div className="modal-box">
           <p className="font-bold text-lg mb-3">
             Товар добавлен в корзину
           </p>
-          <p className="font-bold text-lg">{prod.title}</p>
+          <p className="font-bold text-lg mb-2">{prod.title}</p>
+
           <div className="flex items-center justify-between">
-            <div className="w-[7rem] h-[7rem] mt-5 mb-3 rounded-lg overflow-hidden border border-gray-300">
+            <div className="w-[7rem] h-[7rem] mt-3 mb-3 rounded-lg overflow-hidden border border-gray-300">
               {prod.images && prod.images.length ? (
                 <img
                   src={`/uploads/${JSON.parse(prod.images)[0].original}`}
@@ -489,11 +516,42 @@ const Catalog = observer(({ data, searchParams }) => {
               )}
             </div>
             <strong className="text-2xl font-medium text-gray-800">
-              {dataApp.currency === "USD"
-                ? `$${prod.discountedPrice}`
-                : `${convertPrice(prod.discountedPrice)} BYN`}
+              {formattedTotalPrice}
             </strong>
           </div>
+
+          {/* Таблица с полной инфой о добавленном товаре */}
+          <div className="mt-4 overflow-x-auto">
+            <table className="table-auto w-full text-[11px] border border-gray-300">
+              <thead>
+                <tr className="bg-gray-100 text-left">
+                  <th className="p-2 border border-gray-300">Название</th>
+                  <th className="p-2 border border-gray-300">Кол-во</th>
+                  <th className="p-2 border border-gray-300">
+                    Цена за ед.
+                  </th>
+                  <th className="p-2 border border-gray-300">
+                    Сумма ({quantityInModal} шт.)
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="p-2 border border-gray-300">{prod.title}</td>
+                  <td className="p-2 border border-gray-300">
+                    {quantityInModal}
+                  </td>
+                  <td className="p-2 border border-gray-300">
+                    {formattedUnitPrice}
+                  </td>
+                  <td className="p-2 border border-gray-300">
+                    {formattedTotalPrice}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
           <div className="modal-action">
             <Link href="/korzina" className="btn">
               Перейти в корзину

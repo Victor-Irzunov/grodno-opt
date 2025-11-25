@@ -68,7 +68,7 @@ const GalleryComponent = ({ images, title }) => {
   return (
     <div className="mt-8">
       <div className="relative">
-        <div className="relative rounded-lg overflow-hidden">
+        <div className="relative">
           {hasImages ? (
             <ImageGallery
               ref={galleryRef}
@@ -140,7 +140,7 @@ const GalleryComponent = ({ images, title }) => {
             <img
               src={galleryItems[currentIndex].original}
               alt={title || "Фото товара"}
-              className="rounded-lg w-full h-auto"
+              className="rounded-none w-full h-auto"
             />
 
             <div className="flex justify-between mt-4">

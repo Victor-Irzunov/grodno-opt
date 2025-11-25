@@ -139,7 +139,7 @@ const OneProductPage = observer(({ categories, data, dataAllProduct }) => {
   };
 
   return (
-    <section className="rdataative">
+    <section className="relative pt-10">
       <div className="container mx-auto">
         <Search
           inputRef={inputRef}
@@ -238,7 +238,7 @@ const OneProductPage = observer(({ categories, data, dataAllProduct }) => {
 
                   {/* ===== Новый блок «Описание товара» (моб/левый блок) ===== */}
                   {data?.description ? (
-                    <div className="mt-8 border bg-white/90">
+                    <div className="sd:block xz:hidden mt-8 border bg-white/90">
                       <div className="px-4 py-3 border-b">
                         <h2 className="text-base font-semibold text-gray-800">
                           Описание товара
@@ -255,7 +255,7 @@ const OneProductPage = observer(({ categories, data, dataAllProduct }) => {
                 </div>
 
                 {/* Правый инфо-блок (десктоп) */}
-                <article className="sd:block xz:hidden bg-slate-50 sd:py-8 xz:py-5 sd:px-6 xz:px-2">
+                <article className="bg-slate-50 sd:py-8 xz:py-5 sd:px-6 xz:px-2">
                   <div className="mb-4">
                     <h2 className="text-xs text-gray-700">
                       Артикул: <span className="font-semibold">{data.article}</span>
@@ -350,7 +350,7 @@ const OneProductPage = observer(({ categories, data, dataAllProduct }) => {
 
                   {/* Дублируем описание справа (десктоп) */}
                   {data?.description ? (
-                    <div className="mt-8">
+                    <div className="sd:hidden xz:block mt-8">
                       <h3 className="text-sm font-semibold text-gray-700 mb-2">
                         Описание товара
                       </h3>

@@ -1,4 +1,4 @@
-// /components/CompAdmin/UserDataAdmin.jsx — ПОЛНОСТЬЮ
+// /components/CompAdmin/UserDataAdmin.jsx
 import { getAllUsers } from "@/http/userAPI";
 import { useEffect, useState } from "react";
 import Image from "next/image";
@@ -8,8 +8,8 @@ import EditUserDataAdminForm from "../FormsAdmin/EditUserDataAdminForm";
 const UserDataAdmin = () => {
   const [data, setData] = useState([]);
   const [editUserId, setEditUserId] = useState(null);
-  const [openUserId, setOpenUserId] = useState(null); // кто открыт на просмотр
-  const [search, setSearch] = useState(""); // строка поиска
+  const [openUserId, setOpenUserId] = useState(null);
+  const [search, setSearch] = useState("");
 
   const fetchUsers = async () => {
     try {
@@ -34,24 +34,23 @@ const UserDataAdmin = () => {
     fetchUsers();
   };
 
-  // Фильтрация по имени / id / телефону / email
   const normalizedSearch = search.trim().toLowerCase();
-  const filteredData =
-    !normalizedSearch
-      ? data
-      : data.filter((user) => {
-          const fullName = (user.userData?.fullName || "").toLowerCase();
-          const phone = (user.userData?.phone || "").toLowerCase();
-          const email = (user.email || "").toLowerCase();
-          const idStr = String(user.id || "");
 
-          return (
-            fullName.includes(normalizedSearch) ||
-            phone.includes(normalizedSearch) ||
-            email.includes(normalizedSearch) ||
-            idStr.includes(normalizedSearch)
-          );
-        });
+  const filteredData = !normalizedSearch
+    ? data
+    : data.filter((user) => {
+        const fullName = (user.userData?.fullName || "").toLowerCase();
+        const phone = (user.userData?.phone || "").toLowerCase();
+        const email = (user.email || "").toLowerCase();
+        const idStr = String(user.id || "");
+
+        return (
+          fullName.includes(normalizedSearch) ||
+          phone.includes(normalizedSearch) ||
+          email.includes(normalizedSearch) ||
+          idStr.includes(normalizedSearch)
+        );
+      });
 
   return (
     <div className="p-6 text-white">
@@ -64,8 +63,8 @@ const UserDataAdmin = () => {
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
-              setOpenUserId(null); // при смене поиска закрываем раскрытые карточки
-              setEditUserId(null); // и форму редактирования
+              setOpenUserId(null);
+              setEditUserId(null);
             }}
             placeholder="Поиск по ФИО, ID, телефону или email"
             className="w-full rounded-md bg-[#1f2933] border border-gray-600 px-3 py-2 text-sm text-white placeholder:text-gray-400 focus:outline-none focus:border-primary"
@@ -82,8 +81,12 @@ const UserDataAdmin = () => {
           user.email?.trim() ||
           "Без имени";
 
-        const rawDebt = parseFloat(user.wholesaleBuyer?.debt || 0);
-        const debt = rawDebt > 0 ? `-${rawDebt.toFixed(2)} $` : "0.00 $";
+        const balanceVal = Number(user.wholesaleBuyer?.balance || 0);
+        const debtVal = Number(user.wholesaleBuyer?.debt || 0);
+
+        const net = balanceVal - debtVal; // итоговая позиция клиента
+        const netStr = `${net >= 0 ? "" : "-"}${Math.abs(net).toFixed(2)} $`;
+
         const isEditing = editUserId === user.id;
         const isOpen = openUserId === user.id;
 
@@ -95,7 +98,7 @@ const UserDataAdmin = () => {
           password: "",
           discount: parseFloat(user.wholesaleBuyer?.discount || 0),
           limit: parseFloat(user.wholesaleBuyer?.limit || 0),
-          balance: parseFloat(user.wholesaleBuyer?.balance || 0),
+          balance: balanceVal,
         };
 
         return (
@@ -110,12 +113,13 @@ const UserDataAdmin = () => {
               </div>
 
               <div className="flex items-center space-x-3">
+                {/* Итоговая позиция клиента с учётом долга и баланса */}
                 <p
                   className={`text-sm ${
-                    rawDebt > 0 ? "text-red-400" : "text-green-400"
+                    net < 0 ? "text-red-400" : "text-green-400"
                   }`}
                 >
-                  {debt}
+                  {netStr}
                 </p>
 
                 <Image
@@ -150,26 +154,27 @@ const UserDataAdmin = () => {
                   {user.userData?.fullName || "—"}
                 </p>
                 <p>
-                  <strong>Телефон:</strong> {user.userData?.phone}
+                  <strong>Телефон:</strong> {user.userData?.phone || "—"}
                 </p>
                 <p>
                   <strong>Email:</strong> {user.email}
                 </p>
                 <p>
-                  <strong>Адрес:</strong> {user.userData?.address}
+                  <strong>Адрес:</strong> {user.userData?.address || "—"}
                 </p>
                 <p>
-                  <strong>Баланс:</strong> {user.wholesaleBuyer?.balance} $
+                  <strong>Баланс:</strong> {balanceVal.toFixed(2)} $
                 </p>
                 <p
                   className={`text-sm ${
-                    rawDebt > 0 ? "text-red-400" : "text-green-400"
+                    debtVal > 0 ? "text-red-400" : "text-green-400"
                   }`}
                 >
-                  <strong>Задолженность:</strong> {debt}
+                  <strong>Задолженность:</strong>{" "}
+                  {debtVal > 0 ? debtVal.toFixed(2) : "0.00"} $
                 </p>
                 <p>
-                  <strong>Скидка:</strong> {user.wholesaleBuyer?.discount}%
+                  <strong>Скидка:</strong> {user.wholesaleBuyer?.discount}% 
                 </p>
                 <p>
                   <strong>Лимит:</strong> {user.wholesaleBuyer?.limit}$
@@ -177,6 +182,14 @@ const UserDataAdmin = () => {
                 <p>
                   <strong>Дата регистрации:</strong>{" "}
                   {new Date(user.createdAt).toLocaleString()}
+                </p>
+                <p className="mt-2">
+                  <strong>Итоговая позиция (баланс − долг):</strong>{" "}
+                  <span
+                    className={net < 0 ? "text-red-400" : "text-green-400"}
+                  >
+                    {netStr}
+                  </span>
                 </p>
               </div>
             )}

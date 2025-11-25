@@ -1,6 +1,6 @@
 // /app/api/order/route.js
-import { PrismaClient } from '@prisma/client';
-import { NextResponse } from 'next/server';
+import { PrismaClient } from "@prisma/client";
+import { NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
 
@@ -10,7 +10,10 @@ export async function DELETE(req) {
     const orderId = parseInt(searchParams.get("orderId"), 10);
 
     if (!Number.isInteger(orderId)) {
-      return NextResponse.json({ message: "Некорректный или отсутствующий orderId" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Некорректный или отсутствующий orderId" },
+        { status: 400 }
+      );
     }
 
     const order = await prisma.order.findUnique({
@@ -22,7 +25,10 @@ export async function DELETE(req) {
     });
 
     if (!order) {
-      return NextResponse.json({ message: "Заказ не найден" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Заказ не найден" },
+        { status: 404 }
+      );
     }
 
     await prisma.$transaction(async (tx) => {
@@ -52,38 +58,69 @@ export async function DELETE(req) {
       await tx.order.delete({ where: { id: orderId } });
     });
 
-    return NextResponse.json({ message: "Заказ успешно удалён" }, { status: 200 });
+    return NextResponse.json(
+      { message: "Заказ успешно удалён" },
+      { status: 200 }
+    );
   } catch (error) {
-    console.error('❌ Ошибка при удалении заказа:', error);
-    return NextResponse.json({ message: 'Серверная ошибка при удалении заказа' }, { status: 500 });
+    console.error("❌ Ошибка при удалении заказа:", error);
+    return NextResponse.json(
+      { message: "Серверная ошибка при удалении заказа" },
+      { status: 500 }
+    );
   }
 }
 
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { phone, message, deliveryMethod, address, data, userData: incomingUserData } = body;
+    const {
+      phone,
+      message,
+      deliveryMethod, // === значение из формы клиента
+      address,
+      data,
+      userData: incomingUserData,
+    } = body;
 
     if (!incomingUserData?.userId) {
-      return NextResponse.json({ message: 'Не передан userId пользователя' }, { status: 400 });
+      return NextResponse.json(
+        { message: "Не передан userId пользователя" },
+        { status: 400 }
+      );
     }
 
-    const user = await prisma.user.findUnique({ where: { id: incomingUserData.userId } });
+    const user = await prisma.user.findUnique({
+      where: { id: incomingUserData.userId },
+    });
     if (!user) {
-      return NextResponse.json({ message: 'Пользователь не найден' }, { status: 404 });
+      return NextResponse.json(
+        { message: "Пользователь не найден" },
+        { status: 404 }
+      );
     }
 
-    const userData = await prisma.userData.findUnique({ where: { id: incomingUserData.id } });
+    const userData = await prisma.userData.findUnique({
+      where: { id: incomingUserData.id },
+    });
     if (!userData) {
-      return NextResponse.json({ message: 'UserData не найдена' }, { status: 404 });
+      return NextResponse.json(
+        { message: "UserData не найдена" },
+        { status: 404 }
+      );
     }
 
-    const buyer = await prisma.wholesaleBuyer.findUnique({ where: { userId: user.id } });
+    const buyer = await prisma.wholesaleBuyer.findUnique({
+      where: { userId: user.id },
+    });
     if (!buyer) {
-      return NextResponse.json({ message: 'Пользователь не является оптовым покупателем' }, { status: 404 });
+      return NextResponse.json(
+        { message: "Пользователь не является оптовым покупателем" },
+        { status: 404 }
+      );
     }
 
-    // Обновляем userData
+    // Обновляем userData (телефон/адрес/ФИО)
     await prisma.userData.update({
       where: { id: userData.id },
       data: {
@@ -93,40 +130,47 @@ export async function POST(req) {
       },
     });
 
+    // Считаем сумму заказа, НО НЕ ТРОГАЕМ баланс и долг!
     const totalAmount = Number(
-      data.reduce((sum, item) => {
-        const price = parseFloat(item.price);
-        if (isNaN(price)) throw new Error(`Некорректная цена у товара: ${item.price}`);
-        return sum + price * item.quantity;
-      }, 0).toFixed(2)
+      data
+        .reduce((sum, item) => {
+          const price = parseFloat(item.price);
+          if (isNaN(price)) {
+            throw new Error(`Некорректная цена у товара: ${item.price}`);
+          }
+          return sum + price * item.quantity;
+        }, 0)
+        .toFixed(2)
     );
 
-    let newBalance = Number(buyer.balance);
-    let newDebt = Number(buyer.debt);
-
-    if (newBalance >= totalAmount) {
-      newBalance = Number((newBalance - totalAmount).toFixed(2));
-    } else {
-      newBalance = 0;
-    }
+    // Нормализуем способ доставки и адрес
+    const isPickup = deliveryMethod === "Самовывоз Космонавтов 9, каб 3";
+    const shippingCourier = deliveryMethod || "Самовывоз Космонавтов 9, каб 3";
+    const shippingAddress = isPickup
+      ? "Самовывоз Космонавтов 9, каб 3"
+      : (address || "");
 
     const result = await prisma.$transaction(async (tx) => {
+      // Создаём заказ в статусе "В ожидании" / "В обработке"
       const order = await tx.order.create({
         data: {
           buyerId: buyer.id,
           totalAmount,
           message,
-          // status по умолчанию: "В ожидании"
-          // deliveryStatus по умолчанию: "В обработке"
-          shippingInfo: deliveryMethod !== 'Самовывоз Космонавтов 9, каб 3' ? {
+          // status: "В ожидании" по умолчанию
+          // deliveryStatus: "В обработке" по умолчанию
+
+          // СРАЗУ СОХРАНЯЕМ ВЫБРАННЫЙ КЛИЕНТОМ СПОСОБ ДОСТАВКИ
+          shippingInfo: {
             create: {
-              courier: deliveryMethod,
-              trackingNumber: '',
-              address,
+              courier: shippingCourier, // здесь будет "Самовывоз Космонавтов 9, каб 3" или "Отправить такси" и т.д.
+              trackingNumber: "",
+              address: shippingAddress,
             },
-          } : undefined,
+          },
+
           orderItems: {
-            create: data.map(product => ({
+            create: data.map((product) => ({
               productId: product.id,
               quantity: product.quantity,
               price: parseFloat(product.price),
@@ -139,26 +183,14 @@ export async function POST(req) {
         },
       });
 
-      await tx.wholesaleBuyer.update({
-        where: { id: buyer.id },
-        data: {
-          balance: newBalance,
-        },
-      });
-
-      await tx.balanceTransaction.create({
-        data: {
-          buyerId: buyer.id,
-          amount: totalAmount,
-          type: 'order',
-        },
-      });
-
+      // Резервируем товар (уменьшаем остаток на складе)
       for (const item of data) {
         const product = await tx.product.findUnique({
           where: { id: item.id },
           select: { count: true, status: true },
         });
+
+        if (!product) continue;
 
         const decrementQuantity = Math.min(item.quantity, product.count);
 
@@ -175,17 +207,28 @@ export async function POST(req) {
             },
           });
         } else {
-          console.warn(`⚠️ Попытка уменьшить товар (id: ${item.id}) при нулевом остатке`);
+          console.warn(
+            `⚠️ Попытка уменьшить товар (id: ${item.id}) при нулевом остатке`
+          );
         }
       }
+
+      // НИКАКИХ списаний с баланса и движений по долгу здесь не делаем!
+      // Оплата/долг будут учтены только при ЗАКРЫТИИ заказа (PATCH /api/order/shipping).
 
       return order;
     });
 
-    return NextResponse.json({ message: 'Заказ успешно создан', order: result }, { status: 200 });
+    return NextResponse.json(
+      { message: "Заказ успешно создан", order: result },
+      { status: 200 }
+    );
   } catch (error) {
-    console.error('❌ Ошибка при создании заказа:', error);
-    return NextResponse.json({ message: 'Ошибка сервера' }, { status: 500 });
+    console.error("❌ Ошибка при создании заказа:", error);
+    return NextResponse.json(
+      { message: "Ошибка сервера" },
+      { status: 500 }
+    );
   }
 }
 
@@ -193,7 +236,7 @@ export async function GET(req) {
   try {
     const dataOrders = await prisma.order.findMany({
       where: {
-        status: "В ожидании", // было: "pending"
+        status: "В ожидании",
       },
       include: {
         orderItems: {
@@ -216,7 +259,10 @@ export async function GET(req) {
 
     return NextResponse.json(dataOrders);
   } catch (error) {
-    console.error('❌ Ошибка при получении заказов:', error);
-    return new NextResponse('Серверная ошибка при получении всех заказов', { status: 500 });
+    console.error("❌ Ошибка при получении заказов:", error);
+    return new NextResponse(
+      "Серверная ошибка при получении всех заказов",
+      { status: 500 }
+    );
   }
 }

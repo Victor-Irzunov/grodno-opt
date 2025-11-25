@@ -130,6 +130,9 @@ const TekushchieZakazyAdmin = () => {
                   const isOpen = openOrderId === order.id;
                   const isClosed = order.status === "Завершён";
 
+                  // считаем, что заказ "отправлен", когда deliveryStatus изменён с дефолтного "В обработке"
+                  const isShipped = order.deliveryStatus !== "В обработке";
+
                   const shippingMethod = order.shippingInfo
                     ? order.shippingInfo.courier
                     : "Самовывоз";
@@ -302,49 +305,65 @@ const TekushchieZakazyAdmin = () => {
                             </p>
                           </div>
 
-                          {/* КНОПКИ ПОД ТАБЛИЦЕЙ (кроме "Закрыть заказ") */}
+                          {/* КНОПКИ ПОД ТАБЛИЦЕЙ */}
                           <div className="flex flex-wrap gap-3 mb-4">
-                            {!isClosed && (
-                              <Button
-                                type="primary"
-                                onClick={() => {
-                                  setOpenOrderId(order.id);
-                                  setActiveComponent(order.id);
-                                  setTimeout(
-                                    () => scrollToOrderPanel(order.id),
-                                    50
-                                  );
-                                }}
-                              >
-                                Оформить заказ
-                              </Button>
+                            {/* СТАРТОВОЕ СОСТОЯНИЕ:
+                                только "Оформить заказ" и "Удалить заказ" */}
+                            {!isClosed && !isShipped && (
+                              <>
+                                <Button
+                                  type="primary"
+                                  onClick={() => {
+                                    setOpenOrderId(order.id);
+                                    setActiveComponent(order.id);
+                                    setTimeout(
+                                      () => scrollToOrderPanel(order.id),
+                                      50
+                                    );
+                                  }}
+                                >
+                                  Оформить заказ
+                                </Button>
+
+                                <Popconfirm
+                                  title="Удалить заказ?"
+                                  onConfirm={() => handleDelete(order.id)}
+                                  okText="Да"
+                                  cancelText="Нет"
+                                >
+                                  <Button danger>Удалить заказ</Button>
+                                </Popconfirm>
+                              </>
                             )}
 
-                            {!isClosed && (
-                              <Popconfirm
-                                title="Удалить заказ?"
-                                onConfirm={() => handleDelete(order.id)}
-                                okText="Да"
-                                cancelText="Нет"
-                              >
-                                <Button danger>Удалить заказ</Button>
-                              </Popconfirm>
-                            )}
+                            {/* ПОСЛЕ ОТПРАВКИ (админ оформил заказ через форму):
+                                показываем "Удалить заказ" и "Закрыть заказ" */}
+                            {!isClosed && isShipped && (
+                              <>
+                                <Popconfirm
+                                  title="Удалить заказ?"
+                                  onConfirm={() => handleDelete(order.id)}
+                                  okText="Да"
+                                  cancelText="Нет"
+                                >
+                                  <Button danger>Удалить заказ</Button>
+                                </Popconfirm>
 
-                            {order.shippingInfo && (
-                              <OrderPrint order={order} user={group.user} />
+                                <Button
+                                  danger
+                                  onClick={() => handleCloseOrder(order.id)}
+                                >
+                                  Закрыть заказ
+                                </Button>
+                              </>
                             )}
                           </div>
 
-                          {/* КНОПКА "ЗАКРЫТЬ ЗАКАЗ" — НИЖЕ ПОД ТАБЛИЦЕЙ */}
-                          {!isClosed && (
-                            <div className="mt-2 mb-4 flex justify-end">
-                              <Button
-                                danger
-                                onClick={() => handleCloseOrder(order.id)}
-                              >
-                                Закрыть заказ
-                              </Button>
+                          {/* ПОСЛЕ ОТПРАВКИ ЗАКАЗА — показываем накладную и кнопки "Печать" и "Отправить в телеграмм"
+                              (они реализованы внутри OrderPrint) */}
+                          {!isClosed && isShipped && (
+                            <div className="mt-2 mb-4">
+                              <OrderPrint order={order} user={group.user} />
                             </div>
                           )}
 

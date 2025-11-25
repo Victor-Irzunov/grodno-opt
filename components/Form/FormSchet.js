@@ -8,17 +8,18 @@ const { RangePicker } = DatePicker;
 const FormSchet = ({ onFilter, onReset, dateRange, setDateRange }) => {
   return (
     <ConfigProvider locale={locale}>
-      <form className='flex sd:flex-row xz:flex-col sd:space-x-3 xz:space-x-0'>
+      <form className='flex sd:flex-row xz:flex-col sd:space-x-4 xz:space-x-1'>
         <RangePicker
-          className='rounded-sm'
+          className='rounded-sm mx-1'
           value={dateRange}
           onChange={(dates) => setDateRange(dates)}
           placeholder={['Дата от', 'Дата до']}
         />
-        <div className='flex space-x-3 sd:mt-0 xz:mt-3 justify-end'>
+        <div className='flex sd:mt-0 xz:mt-3 sd:ml-1.5 xz:ml-0'>
           <Button type="primary" className='rounded-sm' onClick={onFilter}>
             Фильтр
           </Button>
+          <div className='mx-1'/>
           <Button className='rounded-sm' onClick={onReset}>
             Сброс
           </Button>
