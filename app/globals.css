@@ -4,7 +4,6 @@
 }
 
 @theme {
-  /* Брейкпоинты как у тебя в config (px -> rem) */
   --breakpoint-xz: 20rem;       /* 320px  */
   --breakpoint-xy: 23.5rem;     /* 376px  */
   --breakpoint-xx: 25.9375rem;  /* 415px  */
